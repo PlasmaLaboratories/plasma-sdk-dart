@@ -122,9 +122,9 @@ class TransactionSyntaxInterpreter {
       Value_Value.asset => value.asset.quantity.value.toBigInt,
       Value_Value.series => value.series.quantity.value.toBigInt,
       Value_Value.group => value.group.quantity.value.toBigInt,
-      Value_Value.updateProposal =>
-        // TODO(ultimaterex): evaluate if this switch is right
-        BigInt.zero,
+      // TODO(ultimaterex): evaluate if the following branches are right
+      Value_Value.updateProposal => BigInt.zero,
+      Value_Value.configProposal => BigInt.zero,
       Value_Value.notSet => BigInt.zero,
     };
   }
