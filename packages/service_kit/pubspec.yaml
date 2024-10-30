@@ -1,7 +1,7 @@
 name: plasma_service_kit
 description: Topl's ready to use toolkit for Flutter on the Topl Blockchain
 version: 0.1.0
-homepage: "https://www.plasmalab.xyz"
+homepage: "https://www.plasma.to"
 repository: https://github.com/PlasmaLaboratories/plasma_sdk_dart
 
 environment:
