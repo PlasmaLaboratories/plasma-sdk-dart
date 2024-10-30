@@ -47,11 +47,11 @@ extension ValueToQuantitySyntaxOps on Value {
       case Value_Value.asset:
         return copy..asset = (copy.asset..quantity = quantity);
       case Value_Value.topl:
-        // return copy..topl = (copy.topl..quantity = quantity);
-        // TODO(ultimaterex): figure out if topl's should have a quantity
-        throw Exception('Topl does not have a quantity?');
+        return copy..topl = (copy.topl..quantity = quantity);
       case Value_Value.updateProposal:
         throw Exception('UpdateProposal does not have a quantity');
+      case Value_Value.configProposal:
+        throw Exception('ConfigProposal does not have a quantity');
       case Value_Value.notSet:
         throw Exception('Value is not set');
     }
