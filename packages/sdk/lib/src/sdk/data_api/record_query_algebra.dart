@@ -1,9 +1,9 @@
 import 'package:grpc/grpc_connection_interface.dart';
 import 'package:plasma_protobuf/plasma_protobuf.dart';
 
-/// Defines a Genus Query API for interacting with a Genus node.
-class GenusQueryAlgebra {
-  GenusQueryAlgebra(this.channel) : client = TransactionServiceClient(channel);
+/// Defines a Indexer Query API for interacting with a Indexer node.
+class IndexerQueryAlgebra {
+  IndexerQueryAlgebra(this.channel) : client = TransactionServiceClient(channel);
 
   /// The gRPC channel to the node.
   final ClientChannelBase channel;
