@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:pointycastle/export.dart';
-import 'package:strata_protobuf/strata_protobuf.dart' as pb;
+import 'package:plasma_protobuf/plasma_protobuf.dart' as pb;
 
 import '../../../common/functional/either.dart';
 import '../../../utils/extensions.dart';
@@ -106,9 +106,7 @@ class SecretKey extends SigningKey with ExtendedEd25519Spec {
 
   @override
   int get hashCode =>
-      const ListEquality().hash(leftKey) ^
-      const ListEquality().hash(rightKey) ^
-      const ListEquality().hash(chainCode);
+      const ListEquality().hash(leftKey) ^ const ListEquality().hash(rightKey) ^ const ListEquality().hash(chainCode);
 }
 
 @immutable
@@ -134,8 +132,7 @@ class PublicKey extends VerificationKey with ExtendedEd25519Spec {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is PublicKey && vk == other.vk && chainCode.equals(other.chainCode);
+      identical(this, other) || other is PublicKey && vk == other.vk && chainCode.equals(other.chainCode);
 
   @override
   // ignore: inference_failure_on_instance_creation

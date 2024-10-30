@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 import '../../common/functional/either.dart';
 import '../../utils/extensions.dart';

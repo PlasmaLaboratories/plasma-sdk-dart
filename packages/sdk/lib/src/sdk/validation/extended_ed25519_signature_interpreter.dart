@@ -1,6 +1,6 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
-import '../../../strata_sdk.dart';
+import '../../../plasma_sdk.dart';
 import '../../quivr/algebras/signature_verifier.dart';
 import '../../quivr/common/quivr_result.dart';
 import '../../quivr/runtime/quivr_runtime_error.dart';
@@ -35,6 +35,5 @@ class ExtendedEd25519SignatureInterpreter implements SignatureVerifier {
   }
 
   @override
-  dynamic Function(dynamic p1) get definedFunction =>
-      throw UnimplementedError();
+  dynamic Function(dynamic p1) get definedFunction => throw UnimplementedError();
 }

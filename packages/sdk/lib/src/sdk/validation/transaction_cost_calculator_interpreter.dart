@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 import '../common/contains_immutable.dart';
 
@@ -17,10 +17,8 @@ class TransactionCostCalculator {
     final baseCost = transactionCostConfig.baseCost;
     final dataCost = transactionDataCost(transaction);
 
-    final inputCost =
-        transaction.inputs.map((e) => transactionInputCost(e)).sum;
-    final outputCost =
-        transaction.outputs.map((e) => transactionOutputCost(e)).sum;
+    final inputCost = transaction.inputs.map((e) => transactionInputCost(e)).sum;
+    final outputCost = transaction.outputs.map((e) => transactionOutputCost(e)).sum;
     return baseCost + dataCost + inputCost + outputCost;
   }
 
@@ -31,10 +29,8 @@ class TransactionCostCalculator {
   ///
   /// Returns a cost, represented as an integer.
   int transactionDataCost(IoTransaction transaction) {
-    final bytes =
-        ContainsImmutable.ioTransaction(transaction).immutableBytes.value;
-    return (bytes.length * transactionCostConfig.dataCostPerMB / 1024 / 1024)
-        .floor();
+    final bytes = ContainsImmutable.ioTransaction(transaction).immutableBytes.value;
+    return (bytes.length * transactionCostConfig.dataCostPerMB / 1024 / 1024).floor();
   }
 
   /// Calculates the cost of consuming a UTxO.
@@ -85,21 +81,13 @@ class TransactionCostCalculator {
       case Proof_Value.equalTo:
         return c.txBindCost + c.equalToCost;
       case Proof_Value.threshold:
-        return c.txBindCost +
-            c.thresholdCost +
-            proof.threshold.responses.map(proofCost).sum;
+        return c.txBindCost + c.thresholdCost + proof.threshold.responses.map(proofCost).sum;
       case Proof_Value.not:
         return c.txBindCost + c.notCost + proofCost(proof);
       case Proof_Value.and:
-        return c.txBindCost +
-            c.andCost +
-            proofCost(proof.and.left) +
-            proofCost(proof.and.right);
+        return c.txBindCost + c.andCost + proofCost(proof.and.left) + proofCost(proof.and.right);
       case Proof_Value.or:
-        return c.txBindCost +
-            c.orCost +
-            proofCost(proof.or.left) +
-            proofCost(proof.or.right);
+        return c.txBindCost + c.orCost + proofCost(proof.or.left) + proofCost(proof.or.right);
       case Proof_Value.notSet:
         return c.emptyCost;
       default:

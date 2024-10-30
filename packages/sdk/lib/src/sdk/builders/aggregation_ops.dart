@@ -1,6 +1,6 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
-import '../../../strata_sdk.dart';
+import '../../../plasma_sdk.dart';
 
 abstract class AggregationOpsDefinition {
   /// Aggregates the quantities of a sequence of values if allowable.
@@ -20,8 +20,7 @@ abstract class AggregationOpsDefinition {
   /// @param values The values to aggregate
   /// @param amount The amount used to calculate change
   /// @return The aggregated values and the change values
-  (List<Value>, List<Value>) aggregateWithChange(
-      List<Value> values, BigInt? amount);
+  (List<Value>, List<Value>) aggregateWithChange(List<Value> values, BigInt? amount);
 }
 
 /// The default aggregation ops implementation.
@@ -46,12 +45,10 @@ class DefaultAggregationOps implements AggregationOpsDefinition {
         throw Exception('Aggregation of UnknownType is not allowed');
       } else if (value.typeIdentifier is AssetType) {
         if (value.asset.quantityDescriptor != QuantityDescriptorType.LIQUID) {
-          throw Exception(
-              'Aggregation of IMMUTABLE, FRACTIONABLE, or ACCUMULATOR assets is not allowed');
+          throw Exception('Aggregation of IMMUTABLE, FRACTIONABLE, or ACCUMULATOR assets is not allowed');
         }
       } else if (value.typeIdentifier is ToplType) {
-        throw Exception(
-            'Aggregation of TOPL with staking registration is not allowed');
+        throw Exception('Aggregation of TOPL with staking registration is not allowed');
       }
       return value.setQuantity(value.quantity! + other.quantity!);
     } else {
@@ -69,8 +66,7 @@ class DefaultAggregationOps implements AggregationOpsDefinition {
   }
 
   @override
-  (List<Value>, List<Value>) aggregateWithChange(
-      List<Value> values, BigInt? amount) {
+  (List<Value>, List<Value>) aggregateWithChange(List<Value> values, BigInt? amount) {
     if (amount != null) {
       try {
         final a128 = amount.toInt128();

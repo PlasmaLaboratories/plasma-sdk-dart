@@ -1,5 +1,5 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
-import 'package:strata_sdk/strata_sdk.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 import 'package:test/test.dart';
 
 void main() {

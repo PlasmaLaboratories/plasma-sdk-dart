@@ -1,7 +1,7 @@
-import 'package:strata_protobuf/google_protobuf.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/google_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
-import '../../../strata_sdk.dart';
+import '../../../plasma_sdk.dart';
 
 /// Int 128 syntax extensions
 

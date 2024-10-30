@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 class ModelGenerators {
   List<int> genSizedStrictByteString(int n, {Random? random}) {

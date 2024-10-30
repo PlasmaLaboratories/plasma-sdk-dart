@@ -1,5 +1,5 @@
 ## 0.0.0
-- Re-release under Strata
+- Re-release under Plasma
 
 ## 2.0.0-beta.1
 - Implements the rename from Contract to Template

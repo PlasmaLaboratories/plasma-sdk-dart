@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_dynamic_calls
 
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 import '../../common/functional/either.dart';
 import '../../crypto/hash/blake2b.dart';
@@ -31,6 +31,5 @@ class Blake2b256DigestInterpreter implements DigestVerifier {
 
   @override
   // TODO(ultimaterex): implement definedFunction
-  dynamic Function(dynamic p1) get definedFunction =>
-      throw UnimplementedError();
+  dynamic Function(dynamic p1) get definedFunction => throw UnimplementedError();
 }

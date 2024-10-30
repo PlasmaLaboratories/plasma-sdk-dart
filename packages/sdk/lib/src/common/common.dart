@@ -1,5 +1,5 @@
 /// exports common helpers
-library strata_sdk.common;
+library plasma_sdk.common;
 
 export 'functional/either.dart';
 export 'functional/list_either.dart';

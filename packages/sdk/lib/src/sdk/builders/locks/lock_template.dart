@@ -1,4 +1,4 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 import '../../../common/functional/either.dart';
 import '../builder_error.dart';
@@ -35,9 +35,8 @@ class PredicateTemplate implements LockTemplate {
 
   factory PredicateTemplate.fromJson(Map<String, dynamic> json) {
     final threshold = json['threshold'] as int;
-    final innerTemplates = (json['innerTemplates'] as List<dynamic>)
-        .map((e) => PropositionTemplate.fromJson(e))
-        .toList();
+    final innerTemplates =
+        (json['innerTemplates'] as List<dynamic>).map((e) => PropositionTemplate.fromJson(e)).toList();
     return PredicateTemplate(innerTemplates, threshold);
   }
   List<PropositionTemplate> innerTemplates;
@@ -45,8 +44,7 @@ class PredicateTemplate implements LockTemplate {
 
   @override
   Either<BuilderError, Lock> build(List<VerificationKey> entityVks) {
-    final result =
-        ThresholdTemplate(innerTemplates, threshold).build(entityVks);
+    final result = ThresholdTemplate(innerTemplates, threshold).build(entityVks);
     return result.flatMap((ip) {
       if (ip.hasThreshold()) {
         final innerPropositions = ip.threshold.challenges;
@@ -58,8 +56,7 @@ class PredicateTemplate implements LockTemplate {
               threshold: threshold),
         ));
       } else {
-        return Either.left(UnableToBuildPropositionTemplate(
-            'Unexpected inner proposition type: ${ip.runtimeType}'));
+        return Either.left(UnableToBuildPropositionTemplate('Unexpected inner proposition type: ${ip.runtimeType}'));
       }
     });
   }

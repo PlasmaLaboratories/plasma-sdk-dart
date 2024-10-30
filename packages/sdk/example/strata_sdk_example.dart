@@ -1,4 +1,4 @@
-import 'package:strata_sdk/strata_sdk.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 
 void main() {
   /// encode String to blake2b256

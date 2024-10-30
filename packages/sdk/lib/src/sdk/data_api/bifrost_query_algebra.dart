@@ -1,13 +1,12 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc_connection_interface.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 /// Defines a Bifrost Query API for interacting with a Bifrost node.
 sealed class BifrostQueryAlgbraDefinition {
   /// Fetches a block by its blockheight [height].
   /// Returns the [BlockId], [BlockBody], and contained transactions [IoTransactions] of the fetched block, if it exists.
-  Future<(BlockId, BlockBody, List<IoTransaction>)?> blockByHeight(
-      Int64 height);
+  Future<(BlockId, BlockBody, List<IoTransaction>)?> blockByHeight(Int64 height);
 
   /// Fetches a block by its [blockId.
   /// Returns a [BlockId], [BlockBody], and List of contained transactions [IoTransactions] of the fetched block, if it exists.
@@ -28,8 +27,7 @@ class BifrostQueryAlgebra implements BifrostQueryAlgbraDefinition {
   final NodeRpcClient client;
 
   @override
-  Future<(BlockId, BlockBody, List<IoTransaction>)?> blockByHeight(
-      Int64 height) async {
+  Future<(BlockId, BlockBody, List<IoTransaction>)?> blockByHeight(Int64 height) async {
     final req = FetchBlockIdAtHeightReq(height: height);
     final blockId = (await client.fetchBlockIdAtHeight(req)).blockId;
 
@@ -38,17 +36,14 @@ class BifrostQueryAlgebra implements BifrostQueryAlgbraDefinition {
   }
 
   @override
-  Future<(BlockId, BlockBody, List<IoTransaction>)?> blockById(
-      BlockId blockId) async {
+  Future<(BlockId, BlockBody, List<IoTransaction>)?> blockById(BlockId blockId) async {
     final req = FetchBlockBodyReq(blockId: blockId);
     final body = (await client.fetchBlockBody(req)).body;
 
     final txIds = body.transactionIds;
 
-    final List<Future<IoTransaction?>> futures =
-        txIds.map((id) => fetchTransaction(id)).toList();
-    final List<IoTransaction> transactions =
-        (await Future.wait(futures)).whereType<IoTransaction>().toList();
+    final List<Future<IoTransaction?>> futures = txIds.map((id) => fetchTransaction(id)).toList();
+    final List<IoTransaction> transactions = (await Future.wait(futures)).whereType<IoTransaction>().toList();
 
     return (blockId, body, transactions);
   }

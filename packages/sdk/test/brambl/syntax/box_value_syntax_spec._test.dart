@@ -1,5 +1,5 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
-import 'package:strata_sdk/strata_sdk.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 import 'package:test/test.dart';
 
 import '../mock_helpers.dart';
@@ -44,8 +44,7 @@ void main() {
       final v4 = assetGroupSeries.setQuantity(mockNewQuantity);
       expect(v4.quantity, mockNewQuantity);
       final v5 = Box(value: Value(topl: Value_TOPL(quantity: mockNewQuantity)));
-      expect(() => v5.value.lvl.quantity = mockNewQuantity,
-          throwsA(isA<UnsupportedError>()));
+      expect(() => v5.value.lvl.quantity = mockNewQuantity, throwsA(isA<UnsupportedError>()));
     });
   });
 }

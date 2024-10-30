@@ -1,6 +1,6 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
-import 'package:strata_sdk/strata_sdk.dart';
-import 'package:strata_service_kit/toolkit/features/simple_transaction/simple_transaction_algebra.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
+import 'package:plasma_service_kit/toolkit/features/simple_transaction/simple_transaction_algebra.dart';
 
 export 'simple_transaction_algebra.dart';
 export 'simple_transaction_algebra_error.dart';
@@ -37,15 +37,13 @@ class SimpleTransaction {
       final someChangeState = changeCoordinates.$3;
 
       final validationResult =
-          walletStateAlgebra.validateCurrentIndicesForFunds(
-              fromFellowship, fromTemplate, someFromState);
+          walletStateAlgebra.validateCurrentIndicesForFunds(fromFellowship, fromTemplate, someFromState);
 
       if (validationResult.isLeft) {
         return Either.left('Invalid params\n ${validationResult.left}');
       }
 
-      final res =
-          await simpleTransactionAlgebra.createSimpleTransactionFromParams(
+      final res = await simpleTransactionAlgebra.createSimpleTransactionFromParams(
         keyfile: keyfile,
         password: password,
         fromFellowship: fromFellowship,
@@ -62,8 +60,7 @@ class SimpleTransaction {
         tokenType: tokenType,
       );
 
-      return res.fold((p0) => Either.left(p0.description),
-          (_) => Either.right("Transaction successfully created"));
+      return res.fold((p0) => Either.left(p0.description), (_) => Either.right("Transaction successfully created"));
     } catch (e) {
       return Either.left('Unexpected error: $e');
     }

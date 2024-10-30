@@ -1,5 +1,5 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
-import 'package:strata_sdk/strata_sdk.dart'
+import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:plasma_sdk/plasma_sdk.dart'
     show
         AddressCodecs,
         Either,
@@ -9,12 +9,11 @@ import 'package:strata_sdk/strata_sdk.dart'
         ValueTypeIdentifier,
         WalletApi,
         WalletStateAlgebra;
-import 'package:strata_service_kit/toolkit/features/simple_transaction/simple_transaction_algebra_error.dart';
-import 'package:strata_service_kit/toolkit/features/wallet/wallet_management_utils.dart';
+import 'package:plasma_service_kit/toolkit/features/simple_transaction/simple_transaction_algebra_error.dart';
+import 'package:plasma_service_kit/toolkit/features/wallet/wallet_management_utils.dart';
 
 abstract class SimpleTransactionAlgebraDefinition {
-  Future<Either<SimpleTransactionAlgebraError, IoTransaction>>
-      createSimpleTransactionFromParams({
+  Future<Either<SimpleTransactionAlgebraError, IoTransaction>> createSimpleTransactionFromParams({
     required String keyfile,
     required String password,
     required String fromFellowship,
@@ -66,8 +65,7 @@ class SimpleTransactionAlgebra extends SimpleTransactionAlgebraDefinition {
   ) async {
     try {
       final lockChange = transactionBuilderApi.lockAddress(lockForChange);
-      final eitherIoTransaction =
-          await transactionBuilderApi.buildTransferAmountTransaction(
+      final eitherIoTransaction = await transactionBuilderApi.buildTransferAmountTransaction(
         typeIdentifier,
         txos,
         predicateFundsToUnlock,
@@ -80,9 +78,7 @@ class SimpleTransactionAlgebra extends SimpleTransactionAlgebraDefinition {
       final ioTransaction = eitherIoTransaction.fold((l) => throw l, (r) => r);
 
       bool nextIndicesExist = false;
-      if (someChangeFellowship != null &&
-          someChangeTemplate != null &&
-          someChangeState != null) {
+      if (someChangeFellowship != null && someChangeTemplate != null && someChangeState != null) {
         nextIndicesExist = !(walletStateApi.getCurrentIndicesForFunds(
               someChangeFellowship,
               someChangeTemplate,
@@ -93,13 +89,10 @@ class SimpleTransactionAlgebra extends SimpleTransactionAlgebraDefinition {
 
       if (ioTransaction.outputs.length >= 2 && !nextIndicesExist) {
         final lockAddress = transactionBuilderApi.lockAddress(lockForChange);
-        final vk = someNextIndices != null
-            ? walletApi.deriveChildKeys(keyPair, someNextIndices)
-            : null;
+        final vk = someNextIndices != null ? walletApi.deriveChildKeys(keyPair, someNextIndices) : null;
 
         walletStateApi.updateWalletState(
-          Encoding()
-              .encodeToBase58Check(lockForChange.predicate.writeToBuffer()),
+          Encoding().encodeToBase58Check(lockForChange.predicate.writeToBuffer()),
           AddressCodecs.encode(lockAddress),
           vk != null ? "ExtendedEd25519" : null,
           vk != null ? Encoding().encodeToBase58(vk.writeToBuffer()) : null,
@@ -113,8 +106,7 @@ class SimpleTransactionAlgebra extends SimpleTransactionAlgebraDefinition {
   }
 
   @override
-  Future<Either<SimpleTransactionAlgebraError, IoTransaction>>
-      createSimpleTransactionFromParams({
+  Future<Either<SimpleTransactionAlgebraError, IoTransaction>> createSimpleTransactionFromParams({
     required String keyfile,
     required String password,
     required String fromFellowship,
@@ -131,51 +123,39 @@ class SimpleTransactionAlgebra extends SimpleTransactionAlgebraDefinition {
     required ValueTypeIdentifier tokenType,
   }) async {
     try {
-      final keyPair = (await walletManagementUtils.loadKeys(keyfile, password))
-          .getOrThrow();
-      final someCurrentIndices = walletStateApi.getCurrentIndicesForFunds(
-          fromFellowship, fromTemplate, someFromState);
+      final keyPair = (await walletManagementUtils.loadKeys(keyfile, password)).getOrThrow();
+      final someCurrentIndices = walletStateApi.getCurrentIndicesForFunds(fromFellowship, fromTemplate, someFromState);
       if (someCurrentIndices == null) {
         return Either.left(CreateTxError('Unable to get current indices'));
       }
-      final predicateFundsToUnlock =
-          walletStateApi.getLockByIndex(someCurrentIndices);
+      final predicateFundsToUnlock = walletStateApi.getLockByIndex(someCurrentIndices);
       if (predicateFundsToUnlock == null) {
-        return Either.left(
-            CreateTxError('Unable to get lock for current indices'));
+        return Either.left(CreateTxError('Unable to get lock for current indices'));
       }
 
       final Indices? someNextIndices;
-      if (someChangeFellowship != null &&
-          someChangeTemplate != null &&
-          someChangeState != null) {
-        someNextIndices = walletStateApi.getCurrentIndicesForFunds(
-            someChangeFellowship, someChangeTemplate, someChangeState);
-      } else {
+      if (someChangeFellowship != null && someChangeTemplate != null && someChangeState != null) {
         someNextIndices =
-            walletStateApi.getNextIndicesForFunds(fromFellowship, fromTemplate);
+            walletStateApi.getCurrentIndicesForFunds(someChangeFellowship, someChangeTemplate, someChangeState);
+      } else {
+        someNextIndices = walletStateApi.getNextIndicesForFunds(fromFellowship, fromTemplate);
       }
       if (someNextIndices == null) {
         return Either.left(CreateTxError('Unable to get next indices'));
       }
 
-      final changeLock = walletStateApi.getLock(
-          fromFellowship, fromTemplate, someNextIndices.z);
+      final changeLock = walletStateApi.getLock(fromFellowship, fromTemplate, someNextIndices.z);
 
       if (changeLock == null) {
-        return Either.left(
-            CreateTxError('Unable to get lock for next indices'));
+        return Either.left(CreateTxError('Unable to get lock for next indices'));
       }
 
-      final fromAddress = transactionBuilderApi
-          .lockAddress(Lock(predicate: predicateFundsToUnlock));
+      final fromAddress = transactionBuilderApi.lockAddress(Lock(predicate: predicateFundsToUnlock));
 
       final List<Txo> txos;
       try {
         txos = (await utxoAlgebra.queryUtxo(fromAddress: fromAddress))
-            .where((x) =>
-                !x.transactionOutput.value.hasTopl() &&
-                !x.transactionOutput.value.hasUpdateProposal())
+            .where((x) => !x.transactionOutput.value.hasTopl() && !x.transactionOutput.value.hasUpdateProposal())
             .toList();
       } catch (e) {
         return Either.left(NetworkProblem(e.toString()));
@@ -189,8 +169,7 @@ class SimpleTransactionAlgebra extends SimpleTransactionAlgebraDefinition {
       if (someToAddress != null) {
         toAddress = someToAddress;
       } else if (someToFellowship != null && someToTemplate != null) {
-        final addrStr =
-            walletStateApi.getAddress(someToFellowship, someToTemplate, null);
+        final addrStr = walletStateApi.getAddress(someToFellowship, someToTemplate, null);
 
         if (addrStr == null) {
           return Either.left(CreateTxError('Unable to determine toAddress'));
@@ -202,8 +181,8 @@ class SimpleTransactionAlgebra extends SimpleTransactionAlgebraDefinition {
           return Either.left(CreateTxError("Invalid toAddress"));
         }
       } else {
-        return Either.left(CreateTxError(
-            "Either someToAddress or (someToFellowship and someToTemplate) must be provided"));
+        return Either.left(
+            CreateTxError("Either someToAddress or (someToFellowship and someToTemplate) must be provided"));
       }
 
       final tx = await buildTransaction(

@@ -1,5 +1,5 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
-import 'package:strata_protobuf/strata_protobuf.dart' as pb;
+import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart' as pb;
 
 import '../../crypto/accumulators/accumulators.dart';
 import '../../crypto/accumulators/merkle/merkle_tree.dart';
@@ -37,6 +37,5 @@ class ContainsEvidence {
 
 extension SizedEvidence on dynamic {
   /// converts a dynamic value to a sized evidence via blake 2b hash
-  Evidence get sizedEvidence =>
-      ContainsEvidence.blake2bEvidenceFromImmutable(this).evidence;
+  Evidence get sizedEvidence => ContainsEvidence.blake2bEvidenceFromImmutable(this).evidence;
 }

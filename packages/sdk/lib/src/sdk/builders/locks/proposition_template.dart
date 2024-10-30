@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:fixnum/fixnum.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 import '../../../common/functional/either.dart';
 import '../../../quivr/proposer.dart';
@@ -50,8 +50,7 @@ extension PropositionTypeExtension on PropositionType {
 
 final class UnableToBuildPropositionTemplate extends BuilderError {
   UnableToBuildPropositionTemplate(String message, {Exception? exception})
-      : super("UnableToBuildPropositionTemplate: $message",
-            exception: exception);
+      : super("UnableToBuildPropositionTemplate: $message", exception: exception);
 }
 
 sealed class PropositionTemplate {
@@ -92,9 +91,7 @@ class LockedTemplate implements PropositionTemplate {
   LockedTemplate(this.data);
 
   factory LockedTemplate.fromJson(Map<String, dynamic> json) {
-    return LockedTemplate(json.containsKey('data')
-        ? (Data.fromBuffer(json['data'] as Uint8List))
-        : null);
+    return LockedTemplate(json.containsKey('data') ? (Data.fromBuffer(json['data'] as Uint8List)) : null);
   }
   final Data? data;
 
@@ -106,8 +103,7 @@ class LockedTemplate implements PropositionTemplate {
     try {
       return Either.right(Proposer.lockedProposer(data));
     } on Exception catch (e) {
-      return Either.left(
-          UnableToBuildPropositionTemplate(e.toString(), exception: e));
+      return Either.left(UnableToBuildPropositionTemplate(e.toString(), exception: e));
     }
   }
 
@@ -140,8 +136,7 @@ class HeightTemplate implements PropositionTemplate {
     try {
       return Either.right(Proposer.heightProposer(chain, min, max));
     } on Exception catch (e) {
-      return Either.left(
-          UnableToBuildPropositionTemplate(e.toString(), exception: e));
+      return Either.left(UnableToBuildPropositionTemplate(e.toString(), exception: e));
     }
   }
 
@@ -174,8 +169,7 @@ class TickTemplate implements PropositionTemplate {
     try {
       return Either.right(Proposer.tickProposer(min, max));
     } on Exception catch (e) {
-      return Either.left(
-          UnableToBuildPropositionTemplate(e.toString(), exception: e));
+      return Either.left(UnableToBuildPropositionTemplate(e.toString(), exception: e));
     }
   }
 
@@ -207,8 +201,7 @@ class DigestTemplate implements PropositionTemplate {
     try {
       return Either.right(Proposer.digestProposer(routine, digest));
     } on Exception catch (e) {
-      return Either.left(
-          UnableToBuildPropositionTemplate(e.toString(), exception: e));
+      return Either.left(UnableToBuildPropositionTemplate(e.toString(), exception: e));
     }
   }
 
@@ -239,15 +232,13 @@ class SignatureTemplate implements PropositionTemplate {
   Either<BuilderError, Proposition> build(List<VerificationKey> entityVks) {
     try {
       if (entityIdx >= 0 && entityIdx < entityVks.length) {
-        return Either.right(
-            Proposer.signatureProposer(routine, entityVks[entityIdx]));
+        return Either.right(Proposer.signatureProposer(routine, entityVks[entityIdx]));
       } else {
         return Either.left(UnableToBuildPropositionTemplate(
             'Signature Proposition failed. Index: $entityIdx. Length of VKs: ${entityVks.length}'));
       }
     } on Exception catch (e) {
-      return Either.left(
-          UnableToBuildPropositionTemplate(e.toString(), exception: e));
+      return Either.left(UnableToBuildPropositionTemplate(e.toString(), exception: e));
     }
   }
 
@@ -264,10 +255,8 @@ class AndTemplate implements PropositionTemplate {
 
   factory AndTemplate.fromJson(Map<String, dynamic> json) {
     return AndTemplate(
-      PropositionTemplate.fromJson(
-          json['leftTemplate'] as Map<String, dynamic>),
-      PropositionTemplate.fromJson(
-          json['rightTemplate'] as Map<String, dynamic>),
+      PropositionTemplate.fromJson(json['leftTemplate'] as Map<String, dynamic>),
+      PropositionTemplate.fromJson(json['rightTemplate'] as Map<String, dynamic>),
     );
   }
   PropositionTemplate leftTemplate;
@@ -289,8 +278,7 @@ class AndTemplate implements PropositionTemplate {
         return Either.left(rp.left);
       }
     } on Exception catch (e) {
-      return Either.left(
-          UnableToBuildPropositionTemplate(e.toString(), exception: e));
+      return Either.left(UnableToBuildPropositionTemplate(e.toString(), exception: e));
     }
   }
 
@@ -307,10 +295,8 @@ class OrTemplate implements PropositionTemplate {
 
   factory OrTemplate.fromJson(Map<String, dynamic> json) {
     return OrTemplate(
-      PropositionTemplate.fromJson(
-          json['leftTemplate'] as Map<String, dynamic>),
-      PropositionTemplate.fromJson(
-          json['rightTemplate'] as Map<String, dynamic>),
+      PropositionTemplate.fromJson(json['leftTemplate'] as Map<String, dynamic>),
+      PropositionTemplate.fromJson(json['rightTemplate'] as Map<String, dynamic>),
     );
   }
   PropositionTemplate leftTemplate;
@@ -332,8 +318,7 @@ class OrTemplate implements PropositionTemplate {
         return Either.left(rp.left);
       }
     } on Exception catch (e) {
-      return Either.left(
-          UnableToBuildPropositionTemplate(e.toString(), exception: e));
+      return Either.left(UnableToBuildPropositionTemplate(e.toString(), exception: e));
     }
   }
 
@@ -350,8 +335,7 @@ class NotTemplate implements PropositionTemplate {
 
   factory NotTemplate.fromJson(Map<String, dynamic> json) {
     return NotTemplate(
-      PropositionTemplate.fromJson(
-          json['innerTemplate'] as Map<String, dynamic>),
+      PropositionTemplate.fromJson(json['innerTemplate'] as Map<String, dynamic>),
     );
   }
   final PropositionTemplate innerTemplate;
@@ -365,8 +349,7 @@ class NotTemplate implements PropositionTemplate {
       final it = innerTemplate.build(entityVks);
       return it.map((proposition) => Proposer.notProposer(proposition));
     } on Exception catch (e) {
-      return Either.left(
-          UnableToBuildPropositionTemplate(e.toString(), exception: e));
+      return Either.left(UnableToBuildPropositionTemplate(e.toString(), exception: e));
     }
   }
 
@@ -418,11 +401,10 @@ class ThresholdTemplate implements PropositionTemplate {
     }
 
     try {
-      return buildInner(innerTemplates, Either.right([])).flatMap((props) =>
-          Either.right(Proposer.thresholdProposer(props, threshold)));
+      return buildInner(innerTemplates, Either.right([]))
+          .flatMap((props) => Either.right(Proposer.thresholdProposer(props, threshold)));
     } on Exception catch (e) {
-      return Either.left(
-          UnableToBuildPropositionTemplate(e.toString(), exception: e));
+      return Either.left(UnableToBuildPropositionTemplate(e.toString(), exception: e));
     }
   }
 

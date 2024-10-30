@@ -1,8 +1,8 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
-import 'package:strata_sdk/src/common/functional/either.dart';
-import 'package:strata_sdk/src/sdk/builders/locks/lock_template.dart';
-import 'package:strata_sdk/src/sdk/common/contains_evidence.dart';
-import 'package:strata_sdk/src/sdk/data_api/wallet_state_algebra.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:plasma_sdk/src/common/functional/either.dart';
+import 'package:plasma_sdk/src/sdk/builders/locks/lock_template.dart';
+import 'package:plasma_sdk/src/sdk/common/contains_evidence.dart';
+import 'package:plasma_sdk/src/sdk/data_api/wallet_state_algebra.dart';
 
 import 'mock_helpers.dart';
 
@@ -42,8 +42,7 @@ class MockWalletStateApi extends WalletStateAlgebra {
   }
 
   @override
-  Indices? getCurrentIndicesForFunds(
-      String fellowship, String contract, int? someState) {
+  Indices? getCurrentIndicesForFunds(String fellowship, String contract, int? someState) {
     throw UnimplementedError();
   }
 
@@ -53,8 +52,7 @@ class MockWalletStateApi extends WalletStateAlgebra {
   }
 
   @override
-  Indices? getIndicesBySignature(
-      Proposition_DigitalSignature signatureProposition) {
+  Indices? getIndicesBySignature(Proposition_DigitalSignature signatureProposition) {
     return propEvidenceToIdx[signatureProposition.sizedEvidence];
   }
 
@@ -84,8 +82,8 @@ class MockWalletStateApi extends WalletStateAlgebra {
   }
 
   @override
-  Future<void> updateWalletState(String lockPredicate, String lockAddress,
-      String? routine, String? vk, Indices indices) {
+  Future<void> updateWalletState(
+      String lockPredicate, String lockAddress, String? routine, String? vk, Indices indices) {
     throw UnimplementedError();
   }
 
@@ -95,8 +93,7 @@ class MockWalletStateApi extends WalletStateAlgebra {
   }
 
   @override
-  Either<String, Indices> validateCurrentIndicesForFunds(
-      String fellowship, String contract, int? someState) {
+  Either<String, Indices> validateCurrentIndicesForFunds(String fellowship, String contract, int? someState) {
     throw UnimplementedError();
   }
 
@@ -106,8 +103,7 @@ class MockWalletStateApi extends WalletStateAlgebra {
   }
 
   @override
-  Indices? setCurrentIndices(
-      String fellowship, String template, int interaction) {
+  Indices? setCurrentIndices(String fellowship, String template, int interaction) {
     throw UnimplementedError();
   }
 }
