@@ -1,4 +1,3 @@
-import '../../common/functional/either.dart';
 import '../../crypto/encryption/vault_store.dart';
 
 /// export crypto dependency to members
@@ -15,7 +14,6 @@ abstract class WalletKeyApiAlgebra {
   ///
   /// Throws [WalletKeyException] if persisting fails due to an underlying cause.
   Future<void> saveMainKeyVaultStore(VaultStore mainKeyVaultStore, String name);
-
 
   /// Persist a mnemonic used to recover a Topl Main Secret Key.
   ///
@@ -53,7 +51,6 @@ abstract class WalletKeyApiAlgebra {
   /// Throws [WalletKeyException] if the deletion fails due to an underlying cause (for example, does not exist).
   Future<void> deleteMainKeyVaultStore(String name);
 }
-
 
 /// TODO(ultimaterex): Source has moved this to MockWalletKeyApi, consider refactor
 class WalletKeyException implements Exception {
