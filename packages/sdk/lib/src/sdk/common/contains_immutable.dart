@@ -38,6 +38,30 @@ class ContainsImmutable {
   /// Creates an ContainsImmutable object from a [Uint8List]
   factory ContainsImmutable.struct(str.Struct struct) => struct.writeToBuffer().immutable;
 
+  /// Creates an ContainsImmutable object from a [MapEntry]
+  factory ContainsImmutable.mapEntry(MapEntry entry) {
+    try {
+      // ignore: avoid_dynamic_calls
+      return entry.key.immutable + entry.value.immutable;
+    } catch (e) {
+      throw Exception('Invalid MapEntry type ${entry.runtimeType}, $e');
+    }
+  }
+
+  /// Creates an ContainsImmutable object from a Record
+  factory ContainsImmutable.record((dynamic, dynamic) pair) {
+    try {
+      // ignore: avoid_dynamic_calls
+      return pair.$1.immutable + pair.$2.immutable;
+    } catch (e) {
+      throw Exception('Invalid Record type ${pair.runtimeType}, $e');
+    }
+  }
+
+  /// Creates an ContainsImmutable object from a [Pair]
+  /// alias for [record]
+  factory ContainsImmutable.pair((dynamic, dynamic) pair) => ContainsImmutable.record(pair);
+
   /// Wrapper object for ByteString
   factory ContainsImmutable.byteString(ByteString byteString) => byteString.bytes.immutable;
 
@@ -165,6 +189,8 @@ class ContainsImmutable {
         return ContainsImmutable.groupValue(v.group);
       case Value_Value.updateProposal:
         return ContainsImmutable.updateProposal(v.updateProposal);
+      case Value_Value.configProposal:
+        return ContainsImmutable.configProposal(v.configProposal);
       case Value_Value.notSet:
         return [0].immutable;
     }
@@ -217,6 +243,13 @@ class ContainsImmutable {
       ContainsImmutable.int64(up.operationalPeriodsPerEpoch.value) +
       up.kesKeyHours.value.immutable +
       up.kesKeyMinutes.value.immutable;
+
+  factory ContainsImmutable.configProposal(Value_ConfigProposal cp) =>
+
+      /// using direct access for better performance
+      cp.value.entries
+          .toList()
+          .fold(ContainsImmutable.empty(), (acc, entry) => acc + ContainsImmutable.mapEntry(entry));
 
   factory ContainsImmutable.fungibility(FungibilityType f) => ContainsImmutable.int(f.value);
 
@@ -502,6 +535,7 @@ class ContainsImmutable {
   static ContainsImmutable apply(dynamic type) {
     /// dart does not support proper type checking in switch statements
     /// ergo: A horrible if/else chain
+    /// new types should be added to this method whenever we add a new ContainsImmutable factory method
     if (type is ContainsImmutable) {
       return type;
     } else if (type is ImmutableBytes) {
@@ -533,6 +567,11 @@ class ContainsImmutable {
       return ContainsImmutable.struct(type);
     } else if (type is List) {
       return ContainsImmutable.seq(type);
+    } else if (type is MapEntry) {
+      return ContainsImmutable.mapEntry(type);
+    } else if (type is (dynamic, dynamic)) {
+      // dynamic is used to allow for any type of pair
+      return ContainsImmutable.pair(type);
     }
 
     /// pb types
@@ -598,6 +637,8 @@ class ContainsImmutable {
       return ContainsImmutable.duration(type);
     } else if (type is Value_UpdateProposal) {
       return ContainsImmutable.updateProposal(type);
+    } else if (type is Value_ConfigProposal) {
+      return ContainsImmutable.configProposal(type);
     }
 
     // extra
@@ -775,4 +816,12 @@ extension ImmutableByteIntListExtensions on List<int> {
 extension IoTransactionContainsImmutableExtensions on IoTransaction {
   // ImmutableBytes get immutable => ContainsImmutable.ioTransaction(this).immutableBytes;
   ImmutableBytes get immutable => ContainsImmutable.ioTransaction(this).immutableBytes;
+}
+
+extension MapEntryContainsImmutableExtensions on MapEntry {
+  ContainsImmutable get immutable => ContainsImmutable.mapEntry(this);
+}
+
+extension DynamicRecordContainsImmutableExtensions on (dynamic, dynamic) {
+  ContainsImmutable get immutable => ContainsImmutable.record(this);
 }
