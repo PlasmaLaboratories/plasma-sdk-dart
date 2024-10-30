@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:plasma_sdk/src/common/functional/either.dart';
 import 'package:plasma_sdk/src/sdk/data_api/wallet_key_api_algebra.dart';
 
 /// Mock implementation of the [WalletKeyApiAlgebra] interface.
@@ -11,59 +10,56 @@ class MockWalletKeyApi extends WalletKeyApiAlgebra {
   static const defaultName = "default";
 
   @override
-  Future<Either<WalletKeyException, Unit>> saveMainKeyVaultStore(VaultStore mainKeyVaultStore, String? name) async {
+  Future<void> saveMainKeyVaultStore(VaultStore mainKeyVaultStore, String? name) async {
     final n = name ?? defaultName;
     if (n == 'error') {
-      return Either.left(WalletKeyException.vaultStoreSave());
+      throw WalletKeyException.vaultStoreSave();
     } else {
       final json = jsonEncode(mainKeyVaultStore.toJson());
       mainKeyVaultStoreInstance[n] = json;
-      return Either.unit();
     }
   }
 
   @override
-  Future<Either<WalletKeyException, VaultStore>> getMainKeyVaultStore(String? name) async {
+  Future<VaultStore> getMainKeyVaultStore(String? name) async {
     final n = name ?? defaultName;
     final json = mainKeyVaultStoreInstance[n];
     if (json == null) {
-      return Either.left(WalletKeyException.vaultStoreNotInitialized());
+      throw WalletKeyException.vaultStoreNotInitialized();
     } else {
       return VaultStore.fromJson(jsonDecode(json))
           .toOption()
-          .fold((p0) => Either.right(p0), () => Either.left(WalletKeyException.decodeVaultStore()));
+          .fold((p0) => p0, () => throw WalletKeyException.decodeVaultStore());
     }
   }
 
   @override
-  Future<Either<WalletKeyException, Unit>> updateMainKeyVaultStore(VaultStore mainKeyVaultStore, String? name) async {
+  Future<void> updateMainKeyVaultStore(VaultStore mainKeyVaultStore, String? name) async {
     final n = name ?? defaultName;
     final json = mainKeyVaultStoreInstance[n];
     if (json == null) {
-      return Either.left(WalletKeyException.vaultStoreNotInitialized());
+      throw WalletKeyException.vaultStoreNotInitialized();
     } else {
       return saveMainKeyVaultStore(mainKeyVaultStore, name);
     }
   }
 
   @override
-  Future<Either<WalletKeyException, Unit>> deleteMainKeyVaultStore(String? name) async {
+  Future<void> deleteMainKeyVaultStore(String? name) async {
     final n = name ?? defaultName;
     final json = mainKeyVaultStoreInstance[n];
     if (json == null) {
-      return Either.left(WalletKeyException.vaultStoreDelete());
+      throw WalletKeyException.vaultStoreDelete();
     } else {
       mainKeyVaultStoreInstance.remove(name);
-      return Either.unit();
     }
   }
 
   @override
-  Future<Either<WalletKeyException, Unit>> saveMnemonic(
+  Future<void> saveMnemonic(
     List<String> mnemonic,
     String mnemonicName,
   ) async {
     mnemonicInstance[mnemonicName] = mnemonic;
-    return Either.unit();
   }
 }
