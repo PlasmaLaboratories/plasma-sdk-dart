@@ -2,8 +2,8 @@ import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc_connection_interface.dart';
 import 'package:plasma_protobuf/plasma_protobuf.dart';
 
-/// Defines a Bifrost Query API for interacting with a Bifrost node.
-sealed class BifrostQueryAlgbraDefinition {
+/// Defines a Node Query API for interacting with a Node node.
+sealed class NodeQueryAlgbraDefinition {
   /// Fetches a block by its blockheight [height].
   /// Returns the [BlockId], [BlockBody], and contained transactions [IoTransactions] of the fetched block, if it exists.
   Future<(BlockId, BlockBody, List<IoTransaction>)?> blockByHeight(Int64 height);
@@ -16,9 +16,9 @@ sealed class BifrostQueryAlgbraDefinition {
   Future<IoTransaction?> fetchTransaction(TransactionId txId);
 }
 
-/// Defines a Bifrost Query API for interacting with a Bifrost node.
-class BifrostQueryAlgebra implements BifrostQueryAlgbraDefinition {
-  BifrostQueryAlgebra(this.channel) : client = NodeRpcClient(channel);
+/// Defines a Node Query API for interacting with a Node node.
+class NodeQueryAlgebra implements NodeQueryAlgbraDefinition {
+  NodeQueryAlgebra(this.channel) : client = NodeRpcClient(channel);
 
   /// The gRPC channel to the node.
   final ClientChannelBase channel;

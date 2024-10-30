@@ -1,5 +1,5 @@
-import 'package:protobuf/protobuf.dart';
 import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:protobuf/protobuf.dart';
 
 import '../common/contains_evidence.dart';
 import '../common/contains_signable.dart';

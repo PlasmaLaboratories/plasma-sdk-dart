@@ -1,5 +1,5 @@
-import 'package:protobuf/protobuf.dart';
 import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:protobuf/protobuf.dart';
 
 extension LvlAsBoxVal on Value_LVL {
   Value asBoxVal() => Value().deepCopy()..lvl = this;
