@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-import 'package:brambldart/brambldart.dart';
+import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:strata_sdk/strata_sdk.dart';
 import 'package:test/test.dart';
-import 'package:topl_common/proto/brambl/models/transaction/io_transaction.pb.dart';
 
 void main() {
   group('TransactionCodecVectorsSpec', () {
@@ -12,12 +12,9 @@ void main() {
         final txBytes = Encoding().decodeFromHex(vector.txHex).getOrThrow();
         final tx = IoTransaction.fromBuffer(txBytes)..freeze();
         final signable = ContainsSignable.ioTransaction(tx).signableBytes;
-        final signableHex =
-            Encoding().encodeToHex(Uint8List.fromList(signable.value));
+        final signableHex = Encoding().encodeToHex(Uint8List.fromList(signable.value));
         expect(signableHex, equals(vector.txSignableHex));
-        expect(
-            Encoding().encodeToBase58(Uint8List.fromList(tx.computeId.value)),
-            equals(vector.txId));
+        expect(Encoding().encodeToBase58(Uint8List.fromList(tx.computeId.value)), equals(vector.txId));
       });
     }
   });
@@ -67,8 +64,7 @@ const vectors = [
 ];
 
 class TestVector {
-  const TestVector(
-      {required this.txHex, required this.txSignableHex, required this.txId});
+  const TestVector({required this.txHex, required this.txSignableHex, required this.txId});
 
   final String txHex;
   final String txSignableHex;
