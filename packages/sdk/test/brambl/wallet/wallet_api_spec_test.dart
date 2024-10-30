@@ -274,8 +274,14 @@ main() {
       expect(newVaultStore, isNot(oldVaultStore));
       expect(newVaultStore, isNotNull);
 
-      final decodeOldPassword = walletApi.extractMainKey(newVaultStore, oldPassword);
-      expect(decodeOldPassword, isNull);
+      // Verify that extracting with the old password throws an exception
+      try {
+        walletApi.extractMainKey(newVaultStore, oldPassword);
+        fail('Expected WalletApiFailure.failedToDecodeWallet to be thrown');
+      } catch (e) {
+        expect(e, isA<WalletApiFailure>());
+        expect((e as WalletApiFailure).type, WalletApiFailureType.failedToDecodeWallet);
+      }
 
       final decodeNewPassword = walletApi.extractMainKey(newVaultStore, newPassword);
       expect(decodeNewPassword, isNotNull);

@@ -263,7 +263,8 @@ class WalletApi extends WalletApiDefinition {
           .getOrThrow(exception: WalletApiFailure.failedToDecodeWallet());
       final keypair = KeyPair.fromBuffer(decoded);
       return keypair;
-    } on WalletApiFailure {
+    } on WalletApiFailure catch (e) {
+      print(e);
       rethrow;
     } catch (e) {
       throw WalletApiFailure.failureDefault(context: e.toString());
