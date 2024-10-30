@@ -1,7 +1,7 @@
 import 'package:fixnum/fixnum.dart';
-import 'package:protobuf/protobuf.dart';
 import 'package:plasma_protobuf/plasma_protobuf.dart';
 import 'package:plasma_sdk/plasma_sdk.dart';
+import 'package:protobuf/protobuf.dart';
 
 /// All protobuf returnables are frozen
 /// This is to ensure that they are not mutated and are available for rebuild during testing
