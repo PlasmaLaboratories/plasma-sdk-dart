@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:strata_sdk/strata_sdk.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 
 class BaseSpec {
   static const testDirectory = './tmp';

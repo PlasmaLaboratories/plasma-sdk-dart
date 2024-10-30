@@ -3,8 +3,8 @@
 import 'dart:typed_data';
 
 import 'package:plasma_protobuf/plasma_protobuf.dart';
-import 'package:plasma_sdk/src/utils/extensions.dart';
 import 'package:plasma_sdk/plasma_sdk.dart';
+import 'package:plasma_sdk/src/utils/extensions.dart';
 import 'package:test/test.dart';
 
 void main() {
