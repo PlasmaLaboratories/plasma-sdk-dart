@@ -1,5 +1,5 @@
 /// Let's get this show on the road!
-library strata_sdk;
+library plasma_sdk;
 
 /// --- Common ---
 export 'src/common/common.dart';

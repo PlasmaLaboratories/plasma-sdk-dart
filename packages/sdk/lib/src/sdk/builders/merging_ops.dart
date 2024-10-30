@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:strata_protobuf/google_protobuf.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/google_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
-import '../../../strata_sdk.dart';
+import '../../../plasma_sdk.dart';
 import '../../crypto/accumulators/accumulators.dart';
 import '../../crypto/accumulators/merkle/merkle_tree.dart';
 
@@ -16,10 +16,7 @@ class MergingOps {
     final cleared = asset
       ..clearEphemeralMetadata()
       ..clearCommitment();
-    return ContainsImmutable.assetValue(cleared)
-        .immutableBytes
-        .value
-        .toUint8List();
+    return ContainsImmutable.assetValue(cleared).immutableBytes.value.toUint8List();
   }
 
   // Get alloy preimages, sort, then construct merkle proof using Sha256.
@@ -47,42 +44,28 @@ class MergingOps {
     Struct? ephemeralMetadata,
     ByteString? commitment,
   }) {
-    final quantity =
-        values.map((v) => v.transactionOutput.value.asset.quantity).sum();
+    final quantity = values.map((v) => v.transactionOutput.value.asset.quantity).sum();
 
-    final bool isGroupFungible =
-        values.first.transactionOutput.value.asset.fungibility ==
-            FungibilityType.GROUP;
+    final bool isGroupFungible = values.first.transactionOutput.value.asset.fungibility == FungibilityType.GROUP;
 
     return UnspentTransactionOutput(
         address: mergedAssetLockAddress,
         value: Value_Asset(
           groupId: isGroupFungible
-              ? GroupId(
-                  value: values.first.transactionOutput.value.asset
-                      .typeIdentifier.groupIdOrAlloy.value)
+              ? GroupId(value: values.first.transactionOutput.value.asset.typeIdentifier.groupIdOrAlloy.value)
               : null,
           seriesId: !isGroupFungible
-              ? SeriesId(
-                  value: values.first.transactionOutput.value.asset
-                      .typeIdentifier.seriesIdOrAlloy.value)
+              ? SeriesId(value: values.first.transactionOutput.value.asset.typeIdentifier.seriesIdOrAlloy.value)
               : null,
           groupAlloy: !isGroupFungible
-              ? getAlloy(values
-                      .map((v) => v.transactionOutput.value.asset)
-                      .toList())
-                  .toBytesValue
+              ? getAlloy(values.map((v) => v.transactionOutput.value.asset).toList()).toBytesValue
               : null,
           seriesAlloy: isGroupFungible
-              ? getAlloy(values
-                      .map((v) => v.transactionOutput.value.asset)
-                      .toList())
-                  .toBytesValue
+              ? getAlloy(values.map((v) => v.transactionOutput.value.asset).toList()).toBytesValue
               : null,
           quantity: quantity,
           fungibility: values.first.transactionOutput.value.asset.fungibility,
-          quantityDescriptor:
-              values.first.transactionOutput.value.asset.quantityDescriptor,
+          quantityDescriptor: values.first.transactionOutput.value.asset.quantityDescriptor,
           ephemeralMetadata: ephemeralMetadata,
           commitment: commitment?.toBytesValue,
         ).asBoxVal());
@@ -103,43 +86,37 @@ class MergingOps {
 
   static distinctIdentifierValidation(List<ValueTypeIdentifier> values) {
     if (values.toSet().length == values.length) return;
-    throw Exception(
-        "UTXOs to merge must all be distinct (per type identifier)");
+    throw Exception("UTXOs to merge must all be distinct (per type identifier)");
   }
 
   static validFungibilityTypeValidation(List<Txo> values) {
     final fungibility = values.first.transactionOutput.value.asset.fungibility;
-    final typeIdentifier =
-        values.first.transactionOutput.value.asset.typeIdentifier;
+    final typeIdentifier = values.first.transactionOutput.value.asset.typeIdentifier;
 
     if (fungibility == FungibilityType.GROUP_AND_SERIES) {
-      throw Exception(
-          "Assets to merge must not have Group_And_Series fungibility type");
+      throw Exception("Assets to merge must not have Group_And_Series fungibility type");
     } else if (fungibility == FungibilityType.SERIES) {
       final seriesIdOrAlloy = typeIdentifier.seriesIdOrAlloy;
-      if (!values.skip(1).every((v) =>
-          v.transactionOutput.value.asset.typeIdentifier.seriesIdOrAlloy ==
-          seriesIdOrAlloy)) {
-        throw Exception(
-            "Merging Series fungible assets must share a series ID");
+      if (!values
+          .skip(1)
+          .every((v) => v.transactionOutput.value.asset.typeIdentifier.seriesIdOrAlloy == seriesIdOrAlloy)) {
+        throw Exception("Merging Series fungible assets must share a series ID");
       }
     } else if (fungibility == FungibilityType.GROUP) {
       final groupIdOrAlloy = typeIdentifier.groupIdOrAlloy;
-      if (!values.skip(1).every((v) =>
-          v.transactionOutput.value.asset.typeIdentifier.groupIdOrAlloy ==
-          groupIdOrAlloy)) {
+      if (!values
+          .skip(1)
+          .every((v) => v.transactionOutput.value.asset.typeIdentifier.groupIdOrAlloy == groupIdOrAlloy)) {
         throw Exception("Merging Group fungible assets must share a group ID");
       }
     } else {
-      throw Exception(
-          "Merging Group or Series fungible assets do not have valid AssetType identifiers");
+      throw Exception("Merging Group or Series fungible assets do not have valid AssetType identifiers");
     }
   }
 
   static _validIdentifiersValidation(List<Txo> values) {
     try {
-      final identifiers =
-          values.map((v) => v.transactionOutput.value.typeIdentifier).toList();
+      final identifiers = values.map((v) => v.transactionOutput.value.typeIdentifier).toList();
       if (identifiers.every((id) => id is AssetType)) {
         distinctIdentifierValidation(identifiers);
         validFungibilityTypeValidation(values);
@@ -153,21 +130,15 @@ class MergingOps {
 
   static _sameFungibilityTypeValidation(List<Txo> values) {
     final fungibility = values.first.transactionOutput.value.asset.fungibility;
-    if (!values.every(
-        (v) => v.transactionOutput.value.asset.fungibility == fungibility)) {
-      throw Exception(
-          "Assets to merge must all share the same fungibility type");
+    if (!values.every((v) => v.transactionOutput.value.asset.fungibility == fungibility)) {
+      throw Exception("Assets to merge must all share the same fungibility type");
     }
   }
 
   static _sameQuantityDescriptorValidation(List<Txo> values) {
-    final quantityDescriptor =
-        values.first.transactionOutput.value.asset.quantityDescriptor;
-    if (!values.every((v) =>
-        v.transactionOutput.value.asset.quantityDescriptor ==
-        quantityDescriptor)) {
-      throw Exception(
-          "Merging assets must all share the same Quantity Descriptor Type");
+    final quantityDescriptor = values.first.transactionOutput.value.asset.quantityDescriptor;
+    if (!values.every((v) => v.transactionOutput.value.asset.quantityDescriptor == quantityDescriptor)) {
+      throw Exception("Merging assets must all share the same Quantity Descriptor Type");
     }
   }
 

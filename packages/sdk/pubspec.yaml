@@ -1,8 +1,8 @@
-name: strata_sdk
-description: Strata's SDK implemented in Dart for building the next blockchain for good.
+name: plasma_sdk
+description: Plasma's SDK implemented in Dart for building the next blockchain for good.
 version: 0.1.0
-homepage: "https://www.stratalab.xyz"
-repository: https://github.com/StrataLab/strata-sdk-dart
+homepage: "https://www.plasmalab.xyz"
+repository: https://github.com/PlasmaLab/plasma-sdk-dart
 
 
 environment:
@@ -18,7 +18,7 @@ dev_dependencies:
 
 dependencies:
   # --- internal ---
-  strata_protobuf: ^0.1.0
+  plasma_protobuf: ^0.1.0
   
   # --- third party ---
   pointycastle: ^3.1.3

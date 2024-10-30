@@ -1,5 +1,5 @@
 import 'package:protobuf/protobuf.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 extension LvlAsBoxVal on Value_LVL {
   Value asBoxVal() => Value().deepCopy()..lvl = this;
@@ -59,13 +59,11 @@ extension ValueToQuantitySyntaxOps on Value {
 }
 
 extension ValueToQuantityDescriptorSyntax on Value {
-  QuantityDescriptorType? quantityDescriptor() =>
-      ValueToQuantityDescriptorSyntaxOps(this).quantityDescriptor;
+  QuantityDescriptorType? quantityDescriptor() => ValueToQuantityDescriptorSyntaxOps(this).quantityDescriptor;
 }
 
 extension ValueToFungibilitySyntax on Value {
-  FungibilityType? fungibility() =>
-      ValueToFungibilitySyntaxOps(this).fungibility;
+  FungibilityType? fungibility() => ValueToFungibilitySyntaxOps(this).fungibility;
 }
 
 class ValueToQuantityDescriptorSyntaxOps {

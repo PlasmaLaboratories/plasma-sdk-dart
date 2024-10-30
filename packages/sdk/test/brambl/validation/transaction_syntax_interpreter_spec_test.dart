@@ -1,10 +1,10 @@
 import 'package:collection/collection.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:protobuf/protobuf.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
-import 'package:strata_sdk/src/sdk/validation/transaction_syntax_error.dart';
-import 'package:strata_sdk/src/sdk/validation/transaction_syntax_interpreter.dart';
-import 'package:strata_sdk/strata_sdk.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:plasma_sdk/src/sdk/validation/transaction_syntax_error.dart';
+import 'package:plasma_sdk/src/sdk/validation/transaction_syntax_interpreter.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 import 'package:test/test.dart';
 
 import '../mock_helpers.dart';
@@ -17,15 +17,13 @@ void main() {
       });
       final result = TransactionSyntaxInterpreter.validate(testTx)
           .swap()
-          .exists((errors) =>
-              errors.containsError(TransactionSyntaxError.emptyInputs()));
+          .exists((errors) => errors.containsError(TransactionSyntaxError.emptyInputs()));
 
       expect(result, true);
     });
 
     test('validate distinct inputs', () {
-      final testTx =
-          txFull.rebuild((p0) => p0.inputs.update([inputFull, inputFull]));
+      final testTx = txFull.rebuild((p0) => p0.inputs.update([inputFull, inputFull]));
       // final result = TransactionSyntaxInterpreter.validate(testTx).swap().exists((errors) {
       //   for (final error in errors) {
       //     if (error is DuplicateInputError && error.knownIdentifier == inputFull.address) return true;
@@ -34,8 +32,7 @@ void main() {
       // });
       final result = TransactionSyntaxInterpreter.validate(testTx)
           .swap()
-          .exists((errors) => errors
-              .containsExactError(DuplicateInputError(inputFull.address)));
+          .exists((errors) => errors.containsExactError(DuplicateInputError(inputFull.address)));
 
       expect(result, true);
     });
@@ -45,19 +42,17 @@ void main() {
     // alternatively consider removing this test
 
     test('validate maximum outputs count', () {
-      final testTx = txFull.rebuild((p0) => p0.outputs.update(
-          List.filled(TransactionSyntaxInterpreter.shortMaxValue, output)));
+      final testTx =
+          txFull.rebuild((p0) => p0.outputs.update(List.filled(TransactionSyntaxInterpreter.shortMaxValue, output)));
       final result = TransactionSyntaxInterpreter.validate(testTx)
           .swap()
-          .exists((errors) => errors
-              .containsError(TransactionSyntaxError.excessiveOutputsCount()));
+          .exists((errors) => errors.containsError(TransactionSyntaxError.excessiveOutputsCount()));
       expect(result, true);
     }, skip: true);
 
     test('validate positive timestamp', () {
-      final testTx = txFull.rebuild((p0) => p0.datum = txDatum.rebuild((p1) =>
-          p1.event = txDatum.event.rebuild((p2) => p2.schedule =
-              Schedule(min: Int64(3), max: Int64(50), timestamp: Int64(-1)))));
+      final testTx = txFull.rebuild((p0) => p0.datum = txDatum.rebuild((p1) => p1.event =
+          txDatum.event.rebuild((p2) => p2.schedule = Schedule(min: Int64(3), max: Int64(50), timestamp: Int64(-1)))));
       final result = TransactionSyntaxInterpreter.validate(testTx)
           .swap()
           // .exists((errors) {
@@ -66,8 +61,7 @@ void main() {
           //   }
           //   return false;
           // });
-          .exists((errors) =>
-              errors.containsExactError(InvalidTimestampError(Int64(-1))));
+          .exists((errors) => errors.containsExactError(InvalidTimestampError(Int64(-1))));
       expect(result, true);
     });
 
@@ -79,8 +73,8 @@ void main() {
         Schedule(min: Int64(-1), max: Int64(1), timestamp: Int64(100))
       ];
       final result = invalidSchedules.map((schedule) {
-        final testTx = txFull.rebuild((p0) => p0.datum = txDatum.rebuild((p1) =>
-            p1.event = txDatum.event.rebuild((p2) => p2.schedule = schedule)));
+        final testTx = txFull.rebuild((p0) =>
+            p0.datum = txDatum.rebuild((p1) => p1.event = txDatum.event.rebuild((p2) => p2.schedule = schedule)));
         return TransactionSyntaxInterpreter.validate(testTx)
             .swap()
             // .exists((errors) {
@@ -89,8 +83,7 @@ void main() {
             //   }
             //   return false;
             // });
-            .exists(
-                (p0) => p0.containsExactError(InvalidScheduleError(schedule)));
+            .exists((p0) => p0.containsExactError(InvalidScheduleError(schedule)));
       }).every((element) => element);
 
       expect(result, true);
@@ -98,12 +91,10 @@ void main() {
 
     test('validate positive output quantities', () {
       final negativeValue = Value(lvl: Value_LVL(quantity: (-1).toInt128()));
-      final testTx = txFull.rebuild((p0) =>
-          p0.outputs.update(output.rebuild((p1) => p1.value = negativeValue)));
+      final testTx = txFull.rebuild((p0) => p0.outputs.update(output.rebuild((p1) => p1.value = negativeValue)));
       final result = TransactionSyntaxInterpreter.validate(testTx)
           .swap()
-          .exists((errors) => errors.containsExactError(
-              TransactionSyntaxError.nonPositiveOutputValue(negativeValue)));
+          .exists((errors) => errors.containsExactError(TransactionSyntaxError.nonPositiveOutputValue(negativeValue)));
       expect(result, true);
     });
 
@@ -114,8 +105,7 @@ void main() {
       // TODO(ultimaterex): solve mappedListIteration issue
       bool testTx(Value inputValue, Value outputValue) {
         final tx = txFull.rebuild((p0) {
-          p0.inputs.update(p0.inputs
-              .map((input) => input.rebuild((p1) => p1.value = inputValue)));
+          p0.inputs.update(p0.inputs.map((input) => input.rebuild((p1) => p1.value = inputValue)));
           p0.outputs.update([output.rebuild((p1) => p1.value = outputValue)]);
         });
 
@@ -144,10 +134,8 @@ void main() {
 
 // TODO(ultimaterex): move to test suite or to containing error class
 extension ContainsErrorExtension on List<TransactionSyntaxError> {
-  bool containsError(TransactionSyntaxError match) =>
-      _containsError(this, match);
-  bool _containsError(
-      List<TransactionSyntaxError> errors, TransactionSyntaxError match) {
+  bool containsError(TransactionSyntaxError match) => _containsError(this, match);
+  bool _containsError(List<TransactionSyntaxError> errors, TransactionSyntaxError match) {
     for (final error in errors) {
       if (error.type == match.type) {
         return true;
@@ -156,8 +144,7 @@ extension ContainsErrorExtension on List<TransactionSyntaxError> {
     return false;
   }
 
-  bool containsExactError(TransactionSyntaxError match,
-      {bool exactMatch = true}) {
+  bool containsExactError(TransactionSyntaxError match, {bool exactMatch = true}) {
     for (final error in this) {
       if (exactMatch) {
         // TODO(ultimaterex): remove exact match or generize this helper method to actually use it
@@ -165,27 +152,20 @@ extension ContainsErrorExtension on List<TransactionSyntaxError> {
           final cond = switch (error.type) {
             (TransactionSyntaxErrorType.emptyInputs) => true,
             (TransactionSyntaxErrorType.duplicateInput) =>
-              (error as DuplicateInputError).knownIdentifier ==
-                  (match as DuplicateInputError).knownIdentifier,
+              (error as DuplicateInputError).knownIdentifier == (match as DuplicateInputError).knownIdentifier,
             (TransactionSyntaxErrorType.excessiveOutputsCount) => true,
             (TransactionSyntaxErrorType.invalidTimestamp) =>
-              (error as InvalidTimestampError).timestamp ==
-                  (match as InvalidTimestampError).timestamp,
+              (error as InvalidTimestampError).timestamp == (match as InvalidTimestampError).timestamp,
             (TransactionSyntaxErrorType.invalidSchedule) =>
-              (error as InvalidScheduleError).schedule ==
-                  (match as InvalidScheduleError).schedule,
+              (error as InvalidScheduleError).schedule == (match as InvalidScheduleError).schedule,
             (TransactionSyntaxErrorType.nonPositiveOutputValue) =>
               // TODO(ultimaterex): expand on value checking, currently does not check correctly
-              (error as NonPositiveOutputValueError).value ==
-                  (match as NonPositiveOutputValueError).value,
+              (error as NonPositiveOutputValueError).value == (match as NonPositiveOutputValueError).value,
             (TransactionSyntaxErrorType.insufficientInputFunds) =>
-              (error as InsufficientInputFundsError)
-                      .inputs
-                      .equals((match as InsufficientInputFundsError).inputs) &&
+              (error as InsufficientInputFundsError).inputs.equals((match as InsufficientInputFundsError).inputs) &&
                   error.outputs.equals(match.outputs),
             (TransactionSyntaxErrorType.invalidProofType) =>
-              (error as InvalidProofTypeError).proof ==
-                      (match as InvalidProofTypeError).proof &&
+              (error as InvalidProofTypeError).proof == (match as InvalidProofTypeError).proof &&
                   error.proposition == match.proposition,
             (TransactionSyntaxErrorType.invalidDataLength) => true,
             // TODO: Handle this case.

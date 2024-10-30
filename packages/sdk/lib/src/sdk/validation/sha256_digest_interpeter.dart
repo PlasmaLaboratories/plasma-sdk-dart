@@ -1,4 +1,4 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 import '../../common/functional/either.dart';
 import '../../crypto/crypto.dart';
@@ -27,6 +27,5 @@ class Sha256DigestInterpreter implements DigestVerifier {
 
   @override
   // TODO: implement definedFunction
-  Function(DigestVerification T) get definedFunction =>
-      throw UnimplementedError();
+  Function(DigestVerification T) get definedFunction => throw UnimplementedError();
 }

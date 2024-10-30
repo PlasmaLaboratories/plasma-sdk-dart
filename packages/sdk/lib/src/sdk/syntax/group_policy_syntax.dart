@@ -1,4 +1,4 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 import '../../crypto/hash/hash.dart';
 import '../common/contains_immutable.dart';
@@ -9,9 +9,7 @@ typedef GroupPolicy = Event_GroupPolicy;
 class GroupPolicySyntax {
   /// Computes the [GroupId] of the [GroupPolicy].
   static GroupId computeId(GroupPolicy groupPolicy) {
-    final digest = ContainsImmutable.groupPolicyEvent(groupPolicy)
-        .immutableBytes
-        .writeToBuffer();
+    final digest = ContainsImmutable.groupPolicyEvent(groupPolicy).immutableBytes.writeToBuffer();
     final sha256 = SHA256().hash(digest);
     return GroupId(value: sha256);
   }

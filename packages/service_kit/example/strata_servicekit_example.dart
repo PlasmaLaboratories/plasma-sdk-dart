@@ -1,4 +1,4 @@
-import 'package:strata_service_kit/strata_service_kit.dart';
+import 'package:plasma_service_kit/plasma_service_kit.dart';
 
 void main() {
   final walletState = initWalletState();

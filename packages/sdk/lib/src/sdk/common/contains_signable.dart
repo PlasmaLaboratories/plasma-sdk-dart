@@ -1,7 +1,7 @@
 import 'package:protobuf/protobuf.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
-import '../../../strata_sdk.dart';
+import '../../../plasma_sdk.dart';
 
 // Long -> longSignable -> longSignableEvidence -> longSignableEvidenceId
 // Long -> longSignable -> longSignableEvidence -> longSingableEvidenceSignable -> longSingableEvidenceSignableEvidence
@@ -63,8 +63,7 @@ class ContainsSignable {
 }
 
 extension IoTransactionContainsSignableExtensions on IoTransaction {
-  SignableBytes get signable =>
-      ContainsSignable.ioTransaction(this).signableBytes;
+  SignableBytes get signable => ContainsSignable.ioTransaction(this).signableBytes;
 }
 
 extension ImmutableBytesContainsSignableExtension on ImmutableBytes {

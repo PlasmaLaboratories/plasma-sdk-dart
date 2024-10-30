@@ -1,15 +1,13 @@
 import 'package:meta/meta.dart';
-import 'package:strata_protobuf/google_protobuf.dart' hide Value;
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/google_protobuf.dart' hide Value;
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 import '../../common/types/byte_string.dart';
 
 extension TokenTypeIdentifierExtension on Value {
-  ValueToTypeIdentifierSyntaxOps get toTypeIdentifierSyntaxOps =>
-      ValueToTypeIdentifierSyntaxOps(this);
+  ValueToTypeIdentifierSyntaxOps get toTypeIdentifierSyntaxOps => ValueToTypeIdentifierSyntaxOps(this);
 
-  ValueTypeIdentifier get typeIdentifier =>
-      ValueToTypeIdentifierSyntaxOps(this).typeIdentifier;
+  ValueTypeIdentifier get typeIdentifier => ValueToTypeIdentifierSyntaxOps(this).typeIdentifier;
 }
 
 class ValueToTypeIdentifierSyntaxOps {
@@ -41,40 +39,29 @@ class ValueToTypeIdentifierSyntaxOps {
     final sAlloy = asset.seriesAlloy;
 
     // If seriesAlloy is provided, the seriesId is ignored. In this case, groupAlloy should not exist
-    if (asset.hasGroupId() &&
-        !asset.hasGroupAlloy() &&
-        asset.hasSeriesAlloy()) {
+    if (asset.hasGroupId() && !asset.hasGroupAlloy() && asset.hasSeriesAlloy()) {
       return AssetType(gId.value.asByteString, sAlloy.asByteString);
     }
 
     // If groupAlloy is provided, the groupId is ignored. In this case, seriesAlloy should not exist
-    else if (asset.hasSeriesId() &&
-        asset.hasGroupAlloy() &&
-        !asset.hasSeriesAlloy()) {
+    else if (asset.hasSeriesId() && asset.hasGroupAlloy() && !asset.hasSeriesAlloy()) {
       return AssetType(gAlloy.asByteString, sId.value.asByteString);
     }
 
     // if neither groupAlloy or seriesAlloy is provided, the groupId and seriesId are used to identify instead
-    else if (asset.hasGroupId() &&
-        asset.hasSeriesId() &&
-        !asset.hasGroupAlloy() &&
-        !asset.hasSeriesAlloy()) {
+    else if (asset.hasGroupId() && asset.hasSeriesId() && !asset.hasGroupAlloy() && !asset.hasSeriesAlloy()) {
       return AssetType(gId.value.asByteString, sId.value.asByteString);
     }
 
     /// INVALID CASES
     else if (asset.hasGroupAlloy() && asset.hasSeriesAlloy()) {
-      throw Exception(
-          "Both groupAlloy and seriesAlloy cannot exist in an asset");
+      throw Exception("Both groupAlloy and seriesAlloy cannot exist in an asset");
     } else if (!asset.hasGroupAlloy() && !asset.hasSeriesAlloy()) {
-      throw Exception(
-          "Both groupId and seriesId must be provided for non-alloy assets");
+      throw Exception("Both groupId and seriesId must be provided for non-alloy assets");
     } else if (!asset.hasSeriesId() && asset.hasGroupAlloy()) {
-      throw Exception(
-          "seriesId must be provided when groupAlloy is used in an asset");
+      throw Exception("seriesId must be provided when groupAlloy is used in an asset");
     } else if (!asset.hasGroupId() && asset.hasSeriesAlloy()) {
-      throw Exception(
-          "groupId must be provided when seriesAlloy is used in an asset");
+      throw Exception("groupId must be provided when seriesAlloy is used in an asset");
     }
 
     throw Exception("Invalid asset type [Failed all asset type checks]");
@@ -83,8 +70,7 @@ class ValueToTypeIdentifierSyntaxOps {
 
 extension AssetValueTypeExtensions on Value_Asset {
   /// Returns the typeIdentifier [AssetType] of the asset
-  AssetType get typeIdentifier =>
-      ValueToTypeIdentifierSyntaxOps.getAssetType(this);
+  AssetType get typeIdentifier => ValueToTypeIdentifierSyntaxOps.getAssetType(this);
 }
 
 extension BytesValToByteString on BytesValue {
@@ -104,9 +90,7 @@ class LvlType implements ValueTypeIdentifier {
   const LvlType();
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LvlType && runtimeType == other.runtimeType;
+  bool operator ==(Object other) => identical(this, other) || other is LvlType && runtimeType == other.runtimeType;
 
   @override
   int get hashCode => 0;
@@ -122,9 +106,7 @@ class ToplType implements ValueTypeIdentifier {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ToplType &&
-          runtimeType == other.runtimeType &&
-          stakingRegistration == other.stakingRegistration;
+      other is ToplType && runtimeType == other.runtimeType && stakingRegistration == other.stakingRegistration;
 
   @override
   int get hashCode => stakingRegistration.hashCode;
@@ -140,10 +122,7 @@ class GroupType implements ValueTypeIdentifier {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is GroupType &&
-          runtimeType == other.runtimeType &&
-          groupId == other.groupId;
+      identical(this, other) || other is GroupType && runtimeType == other.runtimeType && groupId == other.groupId;
 
   @override
   int get hashCode => groupId.hashCode;
@@ -158,10 +137,7 @@ class SeriesType implements ValueTypeIdentifier {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SeriesType &&
-          runtimeType == other.runtimeType &&
-          seriesId == other.seriesId;
+      identical(this, other) || other is SeriesType && runtimeType == other.runtimeType && seriesId == other.seriesId;
 
   @override
   int get hashCode => seriesId.hashCode;
@@ -200,9 +176,7 @@ class UnknownType implements ValueTypeIdentifier {
   const UnknownType();
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is UnknownType && runtimeType == other.runtimeType;
+  bool operator ==(Object other) => identical(this, other) || other is UnknownType && runtimeType == other.runtimeType;
 
   @override
   int get hashCode => 0;

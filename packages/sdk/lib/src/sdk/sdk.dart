@@ -1,6 +1,6 @@
 /// Exports all brambl submodules
 /// Let's get this show on the road!
-library strata_sdk.sdk;
+library plasma_sdk.sdk;
 
 /// --- Builders ---
 export 'builders/builders.dart';

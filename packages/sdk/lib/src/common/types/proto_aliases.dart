@@ -1,4 +1,4 @@
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 /// simplify protobuf imports with these typedefs
 /// TODO: replace global occurences with new typedefs

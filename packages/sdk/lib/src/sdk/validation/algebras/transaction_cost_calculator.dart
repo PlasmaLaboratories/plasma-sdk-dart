@@ -1,5 +1,5 @@
 import 'package:fixnum/fixnum.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 abstract class TransactionCostCalculator {
   /// Estimates the cost of including the Transaction in a block.

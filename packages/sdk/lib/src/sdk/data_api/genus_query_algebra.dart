@@ -1,5 +1,5 @@
 import 'package:grpc/grpc_connection_interface.dart';
-import 'package:strata_protobuf/strata_protobuf.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 /// Defines a Genus Query API for interacting with a Genus node.
 class GenusQueryAlgebra {
@@ -16,9 +16,7 @@ class GenusQueryAlgebra {
   /// [fromAddress] The lock address to query the unspent UTXOs by.
   /// [txoState] The state of the UTXOs to query. By default, only unspent UTXOs are returned.
   /// returns A sequence of UTXOs.
-  Future<List<Txo>> queryUtxo(
-      {required LockAddress fromAddress,
-      TxoState txoState = TxoState.UNSPENT}) async {
+  Future<List<Txo>> queryUtxo({required LockAddress fromAddress, TxoState txoState = TxoState.UNSPENT}) async {
     final response = await client.getTxosByLockAddress(
       QueryByLockAddressRequest(address: fromAddress, state: txoState),
     );
