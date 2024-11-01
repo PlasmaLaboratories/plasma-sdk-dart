@@ -33,13 +33,15 @@ abstract class TransactionBuilderApiDefinition {
   ///
   /// Uses the [predicate] and [amount] to build the lvl output
   /// returns an unspent transaction output containing lvls
-  Future<UnspentTransactionOutput> lvlOutput(Lock_Predicate predicate, Int128 amount);
+  Future<UnspentTransactionOutput> lvlOutput(
+      Lock_Predicate predicate, Int128 amount);
 
   /// Builds a lvl unspent transaction output for the given lock address and amount
   ///
   /// uses [lockAddress] and [amount] to build the lvl output
   /// returns an unspent transaction output containing lvls
-  Future<UnspentTransactionOutput> lvlOutputWithLockAddress(LockAddress lockAddress, Int128 amount);
+  Future<UnspentTransactionOutput> lvlOutputWithLockAddress(
+      LockAddress lockAddress, Int128 amount);
 
   /// Builds an unspent transaction output containing group constructor tokens for the given parameters.
   ///
@@ -319,7 +321,9 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
     final unprovenAttestationToProve = unprovenAttestation(lockPredicateFrom);
     final BigInt totalValues = lvlTxos.fold(BigInt.zero, (acc, x) {
       final y = x.transactionOutput.value;
-      return y.hasLvl() && y.lvl.hasQuantity() ? acc + y.lvl.quantity.toBigInt() : acc;
+      return y.hasLvl() && y.lvl.hasQuantity()
+          ? acc + y.lvl.quantity.toBigInt()
+          : acc;
     });
 
     final d = datum();
@@ -361,22 +365,27 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
       final fromLockAddr = lockAddress(Lock()..predicate = lockPredicateFrom);
 
       // Filter txos to exclude those with UnknownType
-      final filteredTxos = txos.where((txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType).toList();
+      final filteredTxos = txos
+          .where((txo) =>
+              txo.transactionOutput.value.typeIdentifier is! UnknownType)
+          .toList();
 
       // Validate transfer parameters - can throw exception
-      UserInputValidations.validateTransferAllParams(filteredTxos, fromLockAddr, fee, tokenIdentifier);
+      UserInputValidations.validateTransferAllParams(
+          filteredTxos, fromLockAddr, fee, tokenIdentifier);
 
       final stxoAttestation = unprovenAttestation(lockPredicateFrom);
 
       final d = datum();
       final stxos = _buildStxos(filteredTxos, stxoAttestation);
-      final utxosResult =
-          _buildUtxos(filteredTxos, tokenIdentifier, null, recipientLockAddress, changeLockAddress, fee);
+      final utxosResult = _buildUtxos(filteredTxos, tokenIdentifier, null,
+          recipientLockAddress, changeLockAddress, fee);
 
       // Return IoTransaction
       return IoTransaction(inputs: stxos, outputs: utxosResult, datum: d);
     } on Exception catch (e) {
-      throw BuilderRuntimeError('Failed to build transfer all transaction. cause: $e', e);
+      throw BuilderRuntimeError(
+          'Failed to build transfer all transaction. cause: $e', e);
     }
   }
 
@@ -392,7 +401,10 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
   ) async {
     try {
       final fromLockAddr = lockAddress(Lock(predicate: lockPredicateFrom));
-      final filteredTxos = txos.where((txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType).toList();
+      final filteredTxos = txos
+          .where((txo) =>
+              txo.transactionOutput.value.typeIdentifier is! UnknownType)
+          .toList();
 
       // validate transfer params
       UserInputValidations.validateTransferAmountParams(
@@ -402,16 +414,18 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
       final d = datum();
       final stxos = _buildStxos(filteredTxos, stxoAttestation);
 
-      final utxos =
-          _buildUtxos(filteredTxos, transferType, amount.toBigInt, recipientLockAddress, changeLockAddress, fee);
+      final utxos = _buildUtxos(filteredTxos, transferType, amount.toBigInt,
+          recipientLockAddress, changeLockAddress, fee);
 
       return IoTransaction(inputs: stxos, outputs: utxos, datum: d);
     } on Exception catch (e) {
-      throw BuilderRuntimeError('Failed to build transfer amount transaction. cause: $e', e);
+      throw BuilderRuntimeError(
+          'Failed to build transfer amount transaction. cause: $e', e);
     }
   }
 
-  List<SpentTransactionOutput> _buildStxos(List<Txo> txos, Attestation attestation) {
+  List<SpentTransactionOutput> _buildStxos(
+      List<Txo> txos, Attestation attestation) {
     return txos
         .map((txo) => SpentTransactionOutput(
               address: txo.outputAddress,
@@ -425,28 +439,40 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
   ///
   List<UnspentTransactionOutput> _buildUtxos(
       List<Txo> txos,
-      ValueTypeIdentifier? transferTypeOpt, // If not provided, then we are transferring all
+      ValueTypeIdentifier?
+          transferTypeOpt, // If not provided, then we are transferring all
       BigInt? amount, // If not provided, then we are transferring all
       LockAddress recipientAddress,
       LockAddress changeAddress,
       int fee) {
     try {
-      final groupedValues =
-          _applyFee(fee, txos.map((txo) => txo.transactionOutput.value).groupBy((v) => v.typeIdentifier));
+      final groupedValues = _applyFee(
+          fee,
+          txos
+              .map((txo) => txo.transactionOutput.value)
+              .groupBy((v) => v.typeIdentifier));
 
-      final otherVals =
-          (groupedValues..remove(transferTypeOpt)).values.expand(DefaultAggregationOps().aggregate).toList();
+      final otherVals = (groupedValues..remove(transferTypeOpt))
+          .values
+          .expand(DefaultAggregationOps().aggregate)
+          .toList();
 
       // If transferTypeOpt is provided, then we need to calculate what goes to the recipient vs to change
       final (transferValues, changeValues) = transferTypeOpt != null
           ? DefaultAggregationOps()
               .aggregateWithChange(groupedValues[transferTypeOpt] ?? [], amount)
-              .withResult((x) => (x.$1, x.$2 + otherVals)) // add other values to change
+              .withResult(
+                  (x) => (x.$1, x.$2 + otherVals)) // add other values to change
           : (<Value>[], <Value>[]);
 
-      final toRecipient =
-          transferValues.map((v) => UnspentTransactionOutput(address: recipientAddress, value: v)).toList();
-      final toChange = changeValues.map((v) => UnspentTransactionOutput(address: changeAddress, value: v)).toList();
+      final toRecipient = transferValues
+          .map((v) =>
+              UnspentTransactionOutput(address: recipientAddress, value: v))
+          .toList();
+      final toChange = changeValues
+          .map(
+              (v) => UnspentTransactionOutput(address: changeAddress, value: v))
+          .toList();
 
       return toRecipient + toChange;
     } on Exception catch (e) {
@@ -468,7 +494,9 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
   ) {
     values.keys.whereType<LvlType>().forEach((k) {
       final lvlVals = values[k]!;
-      final newLvlVal = DefaultAggregationOps().aggregateWithChange(lvlVals, BigInt.from(fee)).$2; // accesses change
+      final newLvlVal = DefaultAggregationOps()
+          .aggregateWithChange(lvlVals, BigInt.from(fee))
+          .$2; // accesses change
       if (newLvlVal.isEmpty) {
         values.remove(k);
       } else {
@@ -489,9 +517,13 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
     int fee,
   ) {
     try {
-      final registrationLockAddr = lockAddress(Lock(predicate: lockPredicateFrom));
+      final registrationLockAddr =
+          lockAddress(Lock(predicate: lockPredicateFrom));
 
-      final filteredTxos = txos.where((txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType).toList();
+      final filteredTxos = txos
+          .where((txo) =>
+              txo.transactionOutput.value.typeIdentifier is! UnknownType)
+          .toList();
 
       // Validate constructor minting parameters
       UserInputValidations.validateConstructorMintingParams(
@@ -507,10 +539,12 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
 
       final stxos = _buildStxos(filteredTxos, stxoAttestation);
 
-      final utxoMinted = groupOutput(mintedAddress, quantityToMint.toInt128(), groupPolicy.computeId,
+      final utxoMinted = groupOutput(
+          mintedAddress, quantityToMint.toInt128(), groupPolicy.computeId,
           fixedSeries: groupPolicy.fixedSeries);
 
-      final utxoChange = _buildUtxos(filteredTxos, null, null, changeAddress, changeAddress, fee);
+      final utxoChange = _buildUtxos(
+          filteredTxos, null, null, changeAddress, changeAddress, fee);
 
       // Return IoTransaction
       return IoTransaction(
@@ -520,29 +554,49 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
         groupPolicies: [Datum_GroupPolicy(event: groupPolicy)],
       );
     } on Exception catch (e) {
-      throw BuilderRuntimeError('Failed to build group minting transaction. cause: $e', e);
+      throw BuilderRuntimeError(
+          'Failed to build group minting transaction. cause: $e', e);
     }
   }
 
   @override
-  IoTransaction buildSeriesMintingTransaction(List<Txo> txos, Lock_Predicate lockPredicateFrom,
-      SeriesPolicy seriesPolicy, int quantityToMint, LockAddress mintedAddress, LockAddress changeAddress, int fee) {
+  IoTransaction buildSeriesMintingTransaction(
+      List<Txo> txos,
+      Lock_Predicate lockPredicateFrom,
+      SeriesPolicy seriesPolicy,
+      int quantityToMint,
+      LockAddress mintedAddress,
+      LockAddress changeAddress,
+      int fee) {
     try {
-      final registrationLockAddr = lockAddress(Lock(predicate: lockPredicateFrom));
-      final filteredTxos = txos.where((txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType).toList();
+      final registrationLockAddr =
+          lockAddress(Lock(predicate: lockPredicateFrom));
+      final filteredTxos = txos
+          .where((txo) =>
+              txo.transactionOutput.value.typeIdentifier is! UnknownType)
+          .toList();
 
       // Validate constructor minting parameters - can throw exception
       UserInputValidations.validateConstructorMintingParams(
-          filteredTxos, registrationLockAddr, seriesPolicy.registrationUtxo, quantityToMint.toInt128(), fee);
+          filteredTxos,
+          registrationLockAddr,
+          seriesPolicy.registrationUtxo,
+          quantityToMint.toInt128(),
+          fee);
 
       final stxoAttestation = unprovenAttestation(lockPredicateFrom);
       final stxos = _buildStxos(filteredTxos, stxoAttestation);
       final d = datum();
-      final utxoMinted = seriesOutput(mintedAddress, quantityToMint.toInt128(), seriesPolicy.computeId,
-          seriesPolicy.fungibility, seriesPolicy.quantityDescriptor,
+      final utxoMinted = seriesOutput(
+          mintedAddress,
+          quantityToMint.toInt128(),
+          seriesPolicy.computeId,
+          seriesPolicy.fungibility,
+          seriesPolicy.quantityDescriptor,
           tokenSupply: seriesPolicy.tokenSupply.value);
 
-      final utxoChange = _buildUtxos(filteredTxos, null, null, changeAddress, changeAddress, fee);
+      final utxoChange = _buildUtxos(
+          filteredTxos, null, null, changeAddress, changeAddress, fee);
 
       return IoTransaction(
         inputs: stxos,
@@ -551,7 +605,8 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
         seriesPolicies: [Datum_SeriesPolicy(event: seriesPolicy)],
       );
     } on Exception catch (e) {
-      throw BuilderRuntimeError('Failed to build series minting transaction. cause: $e', e);
+      throw BuilderRuntimeError(
+          'Failed to build series minting transaction. cause: $e', e);
     }
   }
 
@@ -573,7 +628,8 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
   ) {
     final txoMap = txos.groupBy((v) => v.transactionOutput.address);
 
-    return locks.map((key, value) => MapEntry(txoMap[key] ?? [], unprovenAttestation(value)));
+    return locks.map((key, value) =>
+        MapEntry(txoMap[key] ?? [], unprovenAttestation(value)));
   }
 
   @override
@@ -590,7 +646,10 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
     final d = datum();
 
     // Filter txos to exclude those with UnknownType
-    final filteredTxos = txos.where((txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType).toList();
+    final filteredTxos = txos
+        .where(
+            (txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType)
+        .toList();
 
     // Validate asset minting parameters
     UserInputValidations.validateAssetMintingParams(
@@ -601,17 +660,24 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
     );
 
     final attestations = _toAttestationMap(filteredTxos, locks);
-    final stxos = attestations.entries.map((el) => _buildStxos(el.key, el.value)).expand((x) => x).toList();
+    final stxos = attestations.entries
+        .map((el) => _buildStxos(el.key, el.value))
+        .expand((x) => x)
+        .toList();
 
     // Per validation, there is exactly one series token in txos
-    final seriesTxo = filteredTxos.firstWhere((txo) => txo.outputAddress == mintingStatement.seriesTokenUtxo);
-    final nonSeriesTxo = filteredTxos.where((txo) => txo.outputAddress != mintingStatement.seriesTokenUtxo).toList();
+    final seriesTxo = filteredTxos.firstWhere(
+        (txo) => txo.outputAddress == mintingStatement.seriesTokenUtxo);
+    final nonSeriesTxo = filteredTxos
+        .where((txo) => txo.outputAddress != mintingStatement.seriesTokenUtxo)
+        .toList();
 
     final seriesToken = seriesTxo.transactionOutput.value.series;
 
     // Per validation, there is exactly one group token in txos
     final groupToken = filteredTxos
-        .firstWhere((txo) => txo.outputAddress == mintingStatement.groupTokenUtxo)
+        .firstWhere(
+            (txo) => txo.outputAddress == mintingStatement.groupTokenUtxo)
         .transactionOutput
         .value
         .group;
@@ -632,12 +698,17 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
 
     final outputQuantity = seriesToken.hasTokenSupply()
         ? inputQuantity
-        : inputQuantity - (mintingStatement.quantity ~/ seriesToken.tokenSupply.toInt128());
+        : inputQuantity -
+            (mintingStatement.quantity ~/ seriesToken.tokenSupply.toInt128());
     final seriesTxoAdjusted = outputQuantity > Int128().zero
-        ? [(seriesTxo.deepCopy())..transactionOutput.value.series.quantity = outputQuantity]
+        ? [
+            (seriesTxo.deepCopy())
+              ..transactionOutput.value.series.quantity = outputQuantity
+          ]
         : <Txo>[];
 
-    final changeOutputs = _buildUtxos(nonSeriesTxo + seriesTxoAdjusted, null, null, changeAddress, changeAddress, fee);
+    final changeOutputs = _buildUtxos(nonSeriesTxo + seriesTxoAdjusted, null,
+        null, changeAddress, changeAddress, fee);
 
     return IoTransaction(
       inputs: stxos,
@@ -661,7 +732,8 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
     GroupId groupId, {
     SeriesId? fixedSeries,
   }) {
-    final value = Value(group: Group(groupId: groupId, quantity: quantity.value.toInt128));
+    final value = Value(
+        group: Group(groupId: groupId, quantity: quantity.value.toInt128));
     return UnspentTransactionOutput(address: lockAddress, value: value);
   }
 
@@ -764,8 +836,10 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
   Datum_IoTransaction datum() {
     return Datum_IoTransaction(
       event: Event_IoTransaction(
-        schedule:
-            Schedule(min: Int64.ZERO, max: Int64.MAX_VALUE, timestamp: Int64(DateTime.now().millisecondsSinceEpoch)),
+        schedule: Schedule(
+            min: Int64.ZERO,
+            max: Int64.MAX_VALUE,
+            timestamp: Int64(DateTime.now().millisecondsSinceEpoch)),
         metadata: SmallData(),
       ),
     );
@@ -774,21 +848,32 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
   @override
   Attestation unprovenAttestation(Lock_Predicate predicate) {
     return Attestation(
-        predicate:
-            Attestation_Predicate(lock: predicate, responses: List.filled(predicate.challenges.length, Proof())));
+        predicate: Attestation_Predicate(
+            lock: predicate,
+            responses: List.filled(predicate.challenges.length, Proof())));
   }
 
   @override
-  IoTransaction buildAssetMergeTransaction(List<TransactionOutputAddress> utxosToMerge, List<Txo> txos,
-      Map<LockAddress, Lock_Predicate> locks, int fee, LockAddress mergedAssetLockAddress, LockAddress changeAddress,
-      {Struct? ephemeralMetadata, Uint8List? commitment}) {
+  IoTransaction buildAssetMergeTransaction(
+      List<TransactionOutputAddress> utxosToMerge,
+      List<Txo> txos,
+      Map<LockAddress, Lock_Predicate> locks,
+      int fee,
+      LockAddress mergedAssetLockAddress,
+      LockAddress changeAddress,
+      {Struct? ephemeralMetadata,
+      Uint8List? commitment}) {
     try {
       final d = datum();
 
       // Filter txos to exclude those with UnknownType
-      final filteredTxos = txos.where((txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType).toList();
+      final filteredTxos = txos
+          .where((txo) =>
+              txo.transactionOutput.value.typeIdentifier is! UnknownType)
+          .toList();
 
-      UserInputValidations.validateAssetMergingParams(utxosToMerge, filteredTxos, locks.keys.toSet(), fee);
+      UserInputValidations.validateAssetMergingParams(
+          utxosToMerge, filteredTxos, locks.keys.toSet(), fee);
 
       final attestations = _toAttestationMap(filteredTxos, locks);
 
@@ -798,17 +883,24 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
           .toList();
 
       // Partition filteredTxos into txosToMerge and otherTxos
-      final txosToMerge = filteredTxos.where((txo) => utxosToMerge.contains(txo.outputAddress)).toList();
-      final otherTxos = filteredTxos.where((txo) => !utxosToMerge.contains(txo.outputAddress)).toList();
+      final txosToMerge = filteredTxos
+          .where((txo) => utxosToMerge.contains(txo.outputAddress))
+          .toList();
+      final otherTxos = filteredTxos
+          .where((txo) => !utxosToMerge.contains(txo.outputAddress))
+          .toList();
 
       // Build utxosChange for the otherTxos
-      final utxosChange = _buildUtxos(otherTxos, null, null, changeAddress, changeAddress, fee);
+      final utxosChange =
+          _buildUtxos(otherTxos, null, null, changeAddress, changeAddress, fee);
 
       // Merge txosToMerge into a single mergedUtxo
       final mergedUtxo = MergingOps.merge(txosToMerge, mergedAssetLockAddress,
-          ephemeralMetadata: ephemeralMetadata, commitment: commitment?.asByteString);
+          ephemeralMetadata: ephemeralMetadata,
+          commitment: commitment?.asByteString);
 
-      final asm = AssetMergingStatement(inputUtxos: utxosToMerge, outputIdx: utxosChange.length);
+      final asm = AssetMergingStatement(
+          inputUtxos: utxosToMerge, outputIdx: utxosChange.length);
 
       // Return the IoTransaction
       return IoTransaction(
@@ -818,7 +910,8 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
         mergingStatements: [asm],
       );
     } on Exception catch (e) {
-      throw BuilderError('Failed to build asset merge transaction. cause: $e', exception: e);
+      throw BuilderError('Failed to build asset merge transaction. cause: $e',
+          exception: e);
     }
   }
 }

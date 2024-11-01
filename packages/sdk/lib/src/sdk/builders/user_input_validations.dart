@@ -11,11 +11,13 @@ class UserInputValidations {
     String expectedLabel,
     List<Txo> testTxos,
   ) {
-    final filteredTxos = testTxos.where((txo) => txo.outputAddress == expectedAddr).toList();
+    final filteredTxos =
+        testTxos.where((txo) => txo.outputAddress == expectedAddr).toList();
     if (filteredTxos.length == 1) {
       return filteredTxos.first;
     } else {
-      throw UserInputError("Input TXOs need to contain exactly one txo matching the $expectedLabel");
+      throw UserInputError(
+          "Input TXOs need to contain exactly one txo matching the $expectedLabel");
     }
   }
 
@@ -35,7 +37,8 @@ class UserInputValidations {
     if (testValue.hasGroup()) {
       return testValue.group;
     } else {
-      throw UserInputError("$testLabel does not contain Group Constructor Tokens");
+      throw UserInputError(
+          "$testLabel does not contain Group Constructor Tokens");
     }
   }
 
@@ -45,7 +48,8 @@ class UserInputValidations {
     if (testValue.hasSeries()) {
       return testValue.series;
     } else {
-      throw UserInputError("$testLabel does not contain Series Constructor Tokens");
+      throw UserInputError(
+          "$testLabel does not contain Series Constructor Tokens");
     }
   }
 
@@ -69,7 +73,8 @@ class UserInputValidations {
     String expectedLabel,
   ) {
     if (!testAddrs.every(expectedAddrs.contains)) {
-      throw UserInputError("every lock in $testLabel must correspond to $expectedLabel");
+      throw UserInputError(
+          "every lock in $testLabel must correspond to $expectedLabel");
     }
   }
 
@@ -90,9 +95,12 @@ class UserInputValidations {
     if (seriesToken.hasTokenSupply()) {
       final tokenSupply = seriesToken.tokenSupply;
       if (desiredQuantity % tokenSupply.toInt128() != Int128().zero) {
-        throw UserInputError("quantity to mint must be a multiple of token supply");
-      } else if (desiredQuantity > seriesToken.quantity * tokenSupply.toInt128()) {
-        throw UserInputError("quantity to mint must be less than total token supply available.");
+        throw UserInputError(
+            "quantity to mint must be a multiple of token supply");
+      } else if (desiredQuantity >
+          seriesToken.quantity * tokenSupply.toInt128()) {
+        throw UserInputError(
+            "quantity to mint must be less than total token supply available.");
       }
     }
   }
@@ -104,8 +112,11 @@ class UserInputValidations {
     List<Value> allValues,
     ValueTypeIdentifier transferIdentifier,
   ) {
-    final testValues = allValues.where((value) => value.typeIdentifier == transferIdentifier).toList();
-    final inputQuantity = testValues.fold(Int128().zero, (acc, value) => acc + (value.quantity ?? Int128().zero));
+    final testValues = allValues
+        .where((value) => value.typeIdentifier == transferIdentifier)
+        .toList();
+    final inputQuantity = testValues.fold(
+        Int128().zero, (acc, value) => acc + (value.quantity ?? Int128().zero));
     if (inputQuantity < desiredQuantity) {
       throw UserInputError(
         "All tokens selected to transfer do not have enough funds to transfer. "
@@ -148,7 +159,8 @@ class UserInputValidations {
     String testLabel,
   ) {
     if (testValue is ToplType && testValue.stakingRegistration != null) {
-      throw UserInputError("If $testLabel is a Topl type, staking registration must be None");
+      throw UserInputError(
+          "If $testLabel is a Topl type, staking registration must be None");
     }
   }
 
@@ -159,9 +171,8 @@ class UserInputValidations {
     List<Value> testValues, {
     int transferRequirements = 0,
   }) {
-    final totalLvls = testValues
-        .where((value) => value.hasLvl())
-        .fold<Int128>(Int128().zero, (acc, value) => acc + (value.quantity ?? Int128().zero));
+    final totalLvls = testValues.where((value) => value.hasLvl()).fold<Int128>(
+        Int128().zero, (acc, value) => acc + (value.quantity ?? Int128().zero));
     if (totalLvls.toBigInt() < BigInt.from(fee + transferRequirements)) {
       throw UserInputError("Not enough LVLs in input to satisfy fee");
     }
@@ -173,14 +184,18 @@ class UserInputValidations {
     List<Value> values,
     ValueTypeIdentifier testType,
   ) {
-    final transferQds =
-        values.where((value) => value.typeIdentifier == testType).map((value) => value.quantityDescriptor()).toSet();
+    final transferQds = values
+        .where((value) => value.typeIdentifier == testType)
+        .map((value) => value.quantityDescriptor())
+        .toSet();
     if (transferQds.length > 1) {
-      throw UserInputError("All values identified by the ValueTypeIdentifier must have the same quantity descriptor");
+      throw UserInputError(
+          "All values identified by the ValueTypeIdentifier must have the same quantity descriptor");
     } else {
       final qd = transferQds.first;
       if (qd != QuantityDescriptorType.LIQUID) {
-        throw UserInputError("Invalid asset quantity descriptor type. If identifier is an asset, it must be liquid.");
+        throw UserInputError(
+            "Invalid asset quantity descriptor type. If identifier is an asset, it must be liquid.");
       }
     }
   }
@@ -219,7 +234,8 @@ class UserInputValidations {
             "the txos",
             "lockPredicateFrom",
           ),
-      () => validTransferSupplyAll(tokenIdentifier, allValues.map((value) => value.typeIdentifier).toList()),
+      () => validTransferSupplyAll(tokenIdentifier,
+          allValues.map((value) => value.typeIdentifier).toList()),
       () => noUnknownType(tokenIdentifier != null ? [tokenIdentifier] : []),
       () => validFee(fee, allValues),
     ];
@@ -250,8 +266,11 @@ class UserInputValidations {
       () => noUnknownType([transferIdentifier]),
       () => validTransferSupplyAmount(amount, allValues, transferIdentifier),
       () => toplNoStakingReg(transferIdentifier, "tokenIdentifier"),
-      () => distinctIdentifierQuantityDescriptorLiquid(allValues, transferIdentifier),
-      () => validFee(fee, allValues, transferRequirements: transferIdentifier is LvlType ? amount.toInt() : 0),
+      () => distinctIdentifierQuantityDescriptorLiquid(
+          allValues, transferIdentifier),
+      () => validFee(fee, allValues,
+          transferRequirements:
+              transferIdentifier is LvlType ? amount.toInt() : 0),
     ];
 
     /// Throws [UserInputError] if the validation fails.
@@ -268,8 +287,13 @@ class UserInputValidations {
     int fee,
   ) {
     final validations = [
-      () => txosContainsExactlyOneAddress(policyRegistrationUtxo, "registrationUtxo", txos),
-      () => isLvls(txos.firstWhere((txo) => txo.outputAddress == policyRegistrationUtxo).transactionOutput.value,
+      () => txosContainsExactlyOneAddress(
+          policyRegistrationUtxo, "registrationUtxo", txos),
+      () => isLvls(
+          txos
+              .firstWhere((txo) => txo.outputAddress == policyRegistrationUtxo)
+              .transactionOutput
+              .value,
           "registrationUtxo"),
       () => allInputLocksMatch(
             txos.map((txo) => txo.transactionOutput.address).toSet(),
@@ -278,7 +302,8 @@ class UserInputValidations {
             "lockPredicateFrom",
           ),
       () => positiveQuantity(quantityToMint, "quantityToMint"),
-      () => validFee(fee, txos.map((txo) => txo.transactionOutput.value).toList()),
+      () => validFee(
+          fee, txos.map((txo) => txo.transactionOutput.value).toList()),
     ];
 
     /// Throws [UserInputError] if the validation fails.
@@ -296,19 +321,27 @@ class UserInputValidations {
     final txoLocks = txos.map((txo) => txo.transactionOutput.address).toSet();
 
     final validations = [
-      () => allInputLocksMatch(txoLocks, locks, "the txos", "a lock in the lock map"),
-      () => allInputLocksMatch(locks, txoLocks, "the lock map", "a lock in the txos"),
+      () => allInputLocksMatch(
+          txoLocks, locks, "the txos", "a lock in the lock map"),
+      () => allInputLocksMatch(
+          locks, txoLocks, "the lock map", "a lock in the txos"),
       () => positiveQuantity(mintingStatement.quantity, "quantity to mint"),
-      () => validFee(fee, txos.map((txo) => txo.transactionOutput.value).toList()),
+      () => validFee(
+          fee, txos.map((txo) => txo.transactionOutput.value).toList()),
       () {
         // eval group
-        final groupTxo = txosContainsExactlyOneAddress(mintingStatement.groupTokenUtxo, "groupTokenUtxo", txos);
-        final group = isGroup(groupTxo.transactionOutput.value, "groupTokenUtxo");
+        final groupTxo = txosContainsExactlyOneAddress(
+            mintingStatement.groupTokenUtxo, "groupTokenUtxo", txos);
+        final group =
+            isGroup(groupTxo.transactionOutput.value, "groupTokenUtxo");
 
         // eval series
-        final seriesTxo = txosContainsExactlyOneAddress(mintingStatement.seriesTokenUtxo, "seriesTokenUtxo", txos);
-        final series = isSeries(seriesTxo.transactionOutput.value, "groupTokenUtxo");
-        positiveQuantity(series.quantity, "quantity of input series constructor tokens");
+        final seriesTxo = txosContainsExactlyOneAddress(
+            mintingStatement.seriesTokenUtxo, "seriesTokenUtxo", txos);
+        final series =
+            isSeries(seriesTxo.transactionOutput.value, "groupTokenUtxo");
+        positiveQuantity(
+            series.quantity, "quantity of input series constructor tokens");
         validMintingSupply(mintingStatement.quantity, series);
         fixedSeriesMatch(group.fixedSeries, series.seriesId);
       },
@@ -327,12 +360,14 @@ class UserInputValidations {
     int fee,
   ) {
     final txoLocks = txos.map((txo) => txo.transactionOutput.address).toSet();
-    final txosToMerge = txos.where((txo) => utxosToMerge.contains(txo.outputAddress)).toList();
+    final txosToMerge =
+        txos.where((txo) => utxosToMerge.contains(txo.outputAddress)).toList();
 
     final validations = [
       () {
         if (utxosToMerge.length != txosToMerge.length) {
-          throw UserInputError("All UTXOs to merge must be accounted for in txos");
+          throw UserInputError(
+              "All UTXOs to merge must be accounted for in txos");
         }
       },
       () {
@@ -340,9 +375,12 @@ class UserInputValidations {
           throw UserInputError(error.$1);
         });
       },
-      () => allInputLocksMatch(txoLocks, locks, "the txos", "a lock in the lock map"),
-      () => allInputLocksMatch(locks, txoLocks, "the lock map", "a lock in the txos"),
-      () => validFee(fee, txos.map((txo) => txo.transactionOutput.value).toList()),
+      () => allInputLocksMatch(
+          txoLocks, locks, "the txos", "a lock in the lock map"),
+      () => allInputLocksMatch(
+          locks, txoLocks, "the lock map", "a lock in the txos"),
+      () => validFee(
+          fee, txos.map((txo) => txo.transactionOutput.value).toList()),
     ];
 
     /// Throws [UserInputError] if the validation fails.

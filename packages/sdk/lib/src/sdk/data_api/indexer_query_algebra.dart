@@ -3,7 +3,8 @@ import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 /// Defines a Indexer Query API for interacting with a Indexer node.
 class IndexerQueryAlgebra {
-  IndexerQueryAlgebra(this.channel) : client = TransactionServiceClient(channel);
+  IndexerQueryAlgebra(this.channel)
+      : client = TransactionServiceClient(channel);
 
   /// The gRPC channel to the node.
   final ClientChannelBase channel;
@@ -16,7 +17,9 @@ class IndexerQueryAlgebra {
   /// [fromAddress] The lock address to query the unspent UTXOs by.
   /// [txoState] The state of the UTXOs to query. By default, only unspent UTXOs are returned.
   /// returns A sequence of UTXOs.
-  Future<List<Txo>> queryUtxo({required LockAddress fromAddress, TxoState txoState = TxoState.UNSPENT}) async {
+  Future<List<Txo>> queryUtxo(
+      {required LockAddress fromAddress,
+      TxoState txoState = TxoState.UNSPENT}) async {
     final response = await client.getTxosByLockAddress(
       QueryByLockAddressRequest(address: fromAddress, state: txoState),
     );

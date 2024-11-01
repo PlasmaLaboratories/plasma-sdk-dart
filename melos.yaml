@@ -14,3 +14,5 @@ scripts:
     exec: dart analyze .
   test:
     exec: dart test .
+  format:
+    exec: dart format .

@@ -27,5 +27,6 @@ class Sha256DigestInterpreter implements DigestVerifier {
 
   @override
   // TODO: implement definedFunction
-  Function(DigestVerification T) get definedFunction => throw UnimplementedError();
+  Function(DigestVerification T) get definedFunction =>
+      throw UnimplementedError();
 }
