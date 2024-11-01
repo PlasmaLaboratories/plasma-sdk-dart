@@ -27,15 +27,12 @@ main() {
       'createAndSaveNewWallet: Creating a new wallet creates VaultStore that contains a Topl Main Key and a Mnemonic (default length 12)',
       () async {
         final (mockApi, walletApi) = getWalletApi();
-
         final res = await walletApi.createAndSaveNewWallet(password);
-        expect(res.isRight, isTrue);
-        expect(res.get().mnemonic.length, equals(12));
+        expect(res.mnemonic.length, equals(12));
 
-        final vs = res.get().mainKeyVaultStore;
+        final vs = res.mainKeyVaultStore;
         final vsStored = await mockApi.getMainKeyVaultStore(null);
-        expect(vsStored.isRight, isTrue);
-        expect(vsStored.get(), equals(vs));
+        expect(vsStored, equals(vs));
         final mainKey = VaultStore.decodeCipher(vs, password).toOption().map(KeyPair.fromBuffer);
         expect(mainKey.isDefined, isTrue);
         expect(mainKey.value.vk.hasExtendedEd25519(), isTrue);
@@ -49,8 +46,7 @@ main() {
         final (_, walletApi) = getWalletApi();
 
         final res = await walletApi.createAndSaveNewWallet(password, mLen: const MnemonicSize.words24());
-        expect(res.isRight, isTrue);
-        expect(res.get().mnemonic.length, equals(24));
+        expect(res.mnemonic.length, equals(24));
       },
     );
 
@@ -59,42 +55,40 @@ main() {
       () async {
         final (_, walletApi) = getWalletApi();
 
-        final w1 = (await walletApi.createNewWallet("password1".toUtf8Uint8List())).get().mainKeyVaultStore;
-        final w2 = (await walletApi.createNewWallet("password2".toUtf8Uint8List())).get().mainKeyVaultStore;
+        final w1 = (await walletApi.createNewWallet("password1".toUtf8Uint8List())).mainKeyVaultStore;
+        final w2 = (await walletApi.createNewWallet("password2".toUtf8Uint8List())).mainKeyVaultStore;
 
         expect(w1, isNot(w2));
 
-        final res1 = await walletApi.saveWallet(w1, name: "w1");
-        final res2 = await walletApi.saveWallet(w2, name: "w2");
-        expect(res1.isLeft, false); // void  doesn't return a valid right so we're checking for the existence of left
-        expect(res2.isLeft, false);
+        await walletApi.saveWallet(w1, name: "w1");
+        await walletApi.saveWallet(w2, name: "w2");
 
-        final stored1 = (await walletApi.loadWallet(name: "w1")).toOption();
-        expect(stored1.isDefined, true);
-        expect(stored1.value, equals(w1));
+        final stored1 = await walletApi.loadWallet(name: "w1");
+        expect(stored1, equals(w1));
 
-        final stored2 = (await walletApi.loadWallet(name: "w2")).toOption();
-        expect(stored2.isDefined, true);
-        expect(stored2.value, equals(w2));
+        final stored2 = await walletApi.loadWallet(name: "w2");
+        expect(stored2, equals(w2));
       },
     );
 
     test("loadWallet: if the wallet with the name does not exist, the correct error is returned", () async {
       final (_, walletApi) = getWalletApi();
 
-      final res = await walletApi.loadWallet(name: "w1");
-      expect(res.isLeft, true);
-      expect(res.left, equals(WalletApiFailure.failedToLoadWallet()));
+      try {
+        await walletApi.loadWallet(name: "w1");
+        fail('Expected WalletApiFailure.failedToLoadWallet to be thrown');
+      } catch (e) {
+        expect(e, isA<WalletApiFailure>());
+        expect((e as WalletApiFailure).type, WalletApiFailureType.failedToLoadWallet);
+      }
     });
 
     test('extractMainKey: ExtendedEd25519 Topl Main Key is returned', () async {
       final (_, walletApi) = getWalletApi();
 
-      final vaultStore = (await walletApi.createNewWallet(password)).get().mainKeyVaultStore;
-      final mainKeyOpt = walletApi.extractMainKey(vaultStore, password);
-      expect(mainKeyOpt.isRight, isTrue);
+      final vaultStore = (await walletApi.createNewWallet(password)).mainKeyVaultStore;
+      final mainKey = walletApi.extractMainKey(vaultStore, password);
 
-      final mainKey = mainKeyOpt.get();
       expect(mainKey.vk.hasExtendedEd25519(), isTrue);
       expect(mainKey.sk.hasExtendedEd25519(), isTrue);
 
@@ -111,16 +105,12 @@ main() {
 
         final res1 = await walletApi.createAndSaveNewWallet(password, passphrase: 'passphrase1', name: 'w1');
         final res2 = await walletApi.createAndSaveNewWallet(password, passphrase: 'passphrase2', name: 'w2');
-        expect(res1.isRight, isTrue);
-        expect(res2.isRight, isTrue);
+        expect(res1.mnemonic.length, equals(12));
+        expect(res2.mnemonic.length, equals(12));
 
-        final kp1Either = await walletApi.loadAndExtractMainKey(password, name: 'w1');
-        final kp2Either = await walletApi.loadAndExtractMainKey(password, name: 'w2');
-        expect(kp1Either.isRight, isTrue);
-        expect(kp2Either.isRight, isTrue);
+        final kp1 = await walletApi.loadAndExtractMainKey(password, name: 'w1');
+        final kp2 = await walletApi.loadAndExtractMainKey(password, name: 'w2');
 
-        final kp1 = kp1Either.toOption().value;
-        final kp2 = kp2Either.toOption().value;
         expect(kp1.vk.hasExtendedEd25519(), isTrue);
         expect(kp1.sk.hasExtendedEd25519(), isTrue);
         expect(kp2.vk.hasExtendedEd25519(), isTrue);
@@ -140,10 +130,13 @@ main() {
       "createAndSaveNewWallet: If the wallet is successfully created but not saved, the correct error is returned",
       () async {
         final (_, walletApi) = getWalletApi();
-
-        final res = await walletApi.createAndSaveNewWallet(password, name: 'error');
-        expect(res.isLeft, isTrue);
-        expect(res.left, WalletApiFailure.failedToSaveWallet());
+        try {
+          await walletApi.createAndSaveNewWallet(password, name: 'error');
+          fail('Expected [WalletApiFailure.failedToSaveWallet] to be thrown');
+        } catch (e) {
+          expect(e, isA<WalletApiFailure>());
+          expect((e as WalletApiFailure).type, WalletApiFailureType.failedToSaveWallet);
+        }
       },
     );
 
@@ -151,8 +144,8 @@ main() {
       final (_, walletApi) = getWalletApi();
       final signingInstance = ExtendedEd25519();
 
-      final vaultStore = (await walletApi.createNewWallet(password)).get().mainKeyVaultStore;
-      final mainKey = walletApi.extractMainKey(vaultStore, password).get();
+      final vaultStore = (await walletApi.createNewWallet(password)).mainKeyVaultStore;
+      final mainKey = walletApi.extractMainKey(vaultStore, password);
       final idx = Indices(x: 4, y: 4, z: 4);
       final childKey = walletApi.deriveChildKeys(mainKey, idx);
       final signature = signingInstance.sign(SecretKey.proto(childKey.sk.extendedEd25519), testMsg);
@@ -163,8 +156,8 @@ main() {
       final (_, walletApi) = getWalletApi();
       final signingInstance = ExtendedEd25519();
 
-      final vaultStore = (await walletApi.createNewWallet(password)).get().mainKeyVaultStore;
-      final mainKey = walletApi.extractMainKey(vaultStore, password).get();
+      final vaultStore = (await walletApi.createNewWallet(password)).mainKeyVaultStore;
+      final mainKey = walletApi.extractMainKey(vaultStore, password);
       final childKey = walletApi.deriveChildKeysPartial(mainKey, 4, 4);
       final signature = signingInstance.sign(SecretKey.proto(childKey.sk.extendedEd25519), testMsg);
       expect(signingInstance.verify(signature, testMsg, PublicKey.proto(childKey.vk.extendedEd25519)), isTrue);
@@ -174,8 +167,8 @@ main() {
       final (_, walletApi) = getWalletApi();
       final signingInstance = ExtendedEd25519();
 
-      final vaultStore = (await walletApi.createNewWallet(password)).get().mainKeyVaultStore;
-      final mainKey = walletApi.extractMainKey(vaultStore, password).get();
+      final vaultStore = (await walletApi.createNewWallet(password)).mainKeyVaultStore;
+      final mainKey = walletApi.extractMainKey(vaultStore, password);
       final childKeyExpected = walletApi.deriveChildKeys(mainKey, Indices(x: 4, y: 4, z: 4));
       final childKeyPartial = walletApi.deriveChildKeysPartial(mainKey, 4, 4);
       final childVerificationKeyTest = walletApi.deriveChildVerificationKey(childKeyPartial.vk, 4);
@@ -210,32 +203,44 @@ main() {
     test("deleteWallet: Deleting a wallet when a wallet of that name does not exist > Error", () async {
       final (_, walletApi) = getWalletApi();
 
-      final deleteRes = await walletApi.deleteWallet(name: "name");
-      expect(deleteRes.isLeft, isTrue);
-      expect(deleteRes.left, WalletApiFailure.failedToDeleteWallet());
+      try {
+        await walletApi.deleteWallet(name: "name");
+        fail('Expected WalletApiFailure.failedToDeleteWallet to be thrown');
+      } catch (e) {
+        expect(e, isA<WalletApiFailure>());
+        expect((e as WalletApiFailure).type, WalletApiFailureType.failedToDeleteWallet);
+      }
     });
 
     test("deleteWallet: Deleting a wallet > Verify wallet no longer exists at the specified name", () async {
       final (_, walletApi) = getWalletApi();
 
-      final saveRes = await walletApi.createAndSaveNewWallet(password, name: "name");
-      expect(saveRes.isRight, isTrue);
+      await walletApi.createAndSaveNewWallet(password, name: "name");
       final beforeDelete = await walletApi.loadWallet(name: "name");
-      expect(beforeDelete.isRight, isTrue);
-      final deleteRes = await walletApi.deleteWallet(name: "name");
-      expect(deleteRes.isRight, isTrue);
-      final afterDelete = await walletApi.loadWallet(name: "name");
-      expect(afterDelete.isLeft, isTrue);
-      expect(afterDelete.left, WalletApiFailure.failedToLoadWallet());
-    });
+      expect(beforeDelete, isNotNull);
 
+      await walletApi.deleteWallet(name: "name");
+
+      try {
+        await walletApi.loadWallet(name: "name");
+        fail('Expected WalletApiFailure.failedToLoadWallet to be thrown');
+      } catch (e) {
+        expect(e, isA<WalletApiFailure>());
+        expect((e as WalletApiFailure).type, WalletApiFailureType.failedToLoadWallet);
+      }
+    });
     test("updateWallet: Updating a wallet when a wallet of that name does not exist > Error", () async {
       final (_, walletApi) = getWalletApi();
 
       final vs = walletApi.buildMainKeyVaultStore("dummyKeyPair".toUtf8Uint8List(), password);
-      final w1 = await walletApi.updateWallet(vs, name: "name");
-      expect(w1.isLeft, isTrue);
-      expect(w1.left, WalletApiFailure.failedToUpdateWallet());
+
+      try {
+        await walletApi.updateWallet(vs, name: "name");
+        fail('Expected WalletApiFailure.failedToUpdateWallet to be thrown');
+      } catch (e) {
+        expect(e, isA<WalletApiFailure>());
+        expect((e as WalletApiFailure).type, WalletApiFailureType.failedToUpdateWallet);
+      }
     });
 
     test("updateWallet: Updating a wallet > Verify old wallet no longer exists at the specified name", () async {
@@ -243,14 +248,13 @@ main() {
 
       final password = "password".toUtf8Uint8List();
       final oldWallet = await walletApi.createAndSaveNewWallet(password, name: "w1");
-      expect(oldWallet.isRight, isTrue);
+      final oldVaultStore = oldWallet.mainKeyVaultStore;
+
       final newWallet = walletApi.buildMainKeyVaultStore("dummyKeyPair".toUtf8Uint8List(), password);
-      final updateRes = await walletApi.updateWallet(newWallet, name: "w1");
-      expect(updateRes.isRight, isTrue);
-      final loadedWalletRes = await walletApi.loadWallet(name: "w1");
-      expect(loadedWalletRes.isRight, isTrue);
-      final loadedWallet = loadedWalletRes.get();
-      expect(loadedWallet, isNot(oldWallet.get().mainKeyVaultStore));
+      await walletApi.updateWallet(newWallet, name: "w1");
+
+      final loadedWallet = await walletApi.loadWallet(name: "w1");
+      expect(loadedWallet, isNot(oldVaultStore));
       expect(loadedWallet, newWallet);
     });
 
@@ -260,88 +264,108 @@ main() {
       final oldPassword = "oldPassword".toUtf8Uint8List();
       final newPassword = "newPassword".toUtf8Uint8List();
       final oldWallet = await walletApi.createAndSaveNewWallet(oldPassword);
-      expect(oldWallet.isRight, isTrue);
-      final oldVaultStore = oldWallet.get().mainKeyVaultStore;
-      final mainKey = walletApi.extractMainKey(oldVaultStore, oldPassword).get();
-      expect((await walletApi.loadWallet()).get(), oldVaultStore);
-      final updateRes = await walletApi.updateWalletPassword(oldPassword, newPassword);
-      expect(updateRes.isRight, isTrue);
-      final newVaultStore = updateRes.get();
-      final loadedWallet = (await walletApi.loadWallet()).get();
-      expect(loadedWallet, isNot(oldVaultStore));
-      expect(loadedWallet, newVaultStore);
-      final decodeOldPassword = walletApi.extractMainKey(loadedWallet, oldPassword);
-      expect(decodeOldPassword.isLeft, isTrue);
-      expect(decodeOldPassword.left, WalletApiFailure.failedToDecodeWallet());
-      final decodeNewPassword = walletApi.extractMainKey(loadedWallet, newPassword);
-      expect(decodeNewPassword.isRight, isTrue);
-      expect(decodeNewPassword.get(), mainKey);
-    });
+      final oldVaultStore = oldWallet.mainKeyVaultStore;
+      final mainKey = walletApi.extractMainKey(oldVaultStore, oldPassword);
+      expect(await walletApi.loadWallet(), oldVaultStore);
 
+      await walletApi.updateWalletPassword(oldPassword, newPassword);
+
+      final newVaultStore = await walletApi.loadWallet();
+      expect(newVaultStore, isNot(oldVaultStore));
+      expect(newVaultStore, isNotNull);
+
+      // Verify that extracting with the old password throws an exception
+      try {
+        walletApi.extractMainKey(newVaultStore, oldPassword);
+        fail('Expected WalletApiFailure.failedToDecodeWallet to be thrown');
+      } catch (e) {
+        expect(e, isA<WalletApiFailure>());
+        expect((e as WalletApiFailure).type, WalletApiFailureType.failedToDecodeWallet);
+      }
+
+      final decodeNewPassword = walletApi.extractMainKey(newVaultStore, newPassword);
+      expect(decodeNewPassword, isNotNull);
+      expect(decodeNewPassword, mainKey);
+    });
     test("updateWalletPassword: Failure saving > Wallet is accessible with the old password", () async {
       final (mockWalletKeyApi, walletApi) = getWalletApi();
 
       final newPassword = "newPassword".toUtf8Uint8List();
-      final oldVaultStore = (await walletApi.createNewWallet(password)).get().mainKeyVaultStore;
+      final oldVaultStore = (await walletApi.createNewWallet(password)).mainKeyVaultStore;
 
-      // manually save the wallet to the mock data api with the error name
+      // Manually save the wallet to the mock data API with the error name
       mockWalletKeyApi.mainKeyVaultStoreInstance["error"] = jsonEncode(oldVaultStore.toJson());
-      final updateRes = await walletApi.updateWalletPassword(password, newPassword, name: "error");
-      expect(updateRes.isLeft, isTrue);
-      expect(updateRes.left, WalletApiFailure.failedToUpdateWallet());
-      // verify the wallet is still accessible with the old password
-      final loadedWallet = await walletApi.loadAndExtractMainKey(password, name: "error");
-      expect(loadedWallet.isRight, isTrue);
+
+      try {
+        await walletApi.updateWalletPassword(password, newPassword, name: "error");
+        fail('Expected WalletApiFailure.failedToUpdateWallet to be thrown');
+      } catch (e) {
+        expect(e, isA<WalletApiFailure>());
+        expect((e as WalletApiFailure).type, WalletApiFailureType.failedToUpdateWallet);
+      }
+
+      // Verify the wallet is still accessible with the old password
+      final loadedWallet = walletApi.extractMainKey(oldVaultStore, password);
+      expect(loadedWallet, isNotNull);
     });
 
     test("importWallet: import using mnemonic from createNewWallet > Same Main Key", () async {
       final (_, walletApi) = getWalletApi();
 
       final oldPassword = "old-password".toUtf8Uint8List();
-      final wallet = (await walletApi.createNewWallet(oldPassword)).get();
+      final wallet = await walletApi.createNewWallet(oldPassword);
       final mnemonic = wallet.mnemonic;
-      final mainKey = walletApi.extractMainKey(wallet.mainKeyVaultStore, oldPassword).get();
+      final mainKey = walletApi.extractMainKey(wallet.mainKeyVaultStore, oldPassword);
       final newPassword = "new-password".toUtf8Uint8List();
       final importedWallet = await walletApi.importWallet(mnemonic, newPassword);
-      expect(importedWallet.isRight, isTrue);
-      expect(wallet.mainKeyVaultStore, isNot(importedWallet.get()));
-      final importedMainKey = walletApi.extractMainKey(importedWallet.get(), newPassword);
-      expect(importedMainKey.isRight, isTrue);
-      final testMainKey = importedMainKey.get();
-      expect(mainKey, testMainKey);
+
+      expect(wallet.mainKeyVaultStore, isNot(importedWallet));
+      final importedMainKey = walletApi.extractMainKey(importedWallet, newPassword);
+      expect(mainKey, importedMainKey);
+
       final signingInstance = ExtendedEd25519();
       final signature = signingInstance.sign(SecretKey.proto(mainKey.sk.extendedEd25519), testMsg);
-      final testSignature = signingInstance.sign(SecretKey.proto(testMainKey.sk.extendedEd25519), testMsg);
+      final testSignature = signingInstance.sign(SecretKey.proto(importedMainKey.sk.extendedEd25519), testMsg);
+
       expect(signature, testSignature);
-      expect(signingInstance.verify(signature, testMsg, PublicKey.proto(testMainKey.vk.extendedEd25519)), isTrue);
+      expect(signingInstance.verify(signature, testMsg, PublicKey.proto(importedMainKey.vk.extendedEd25519)), isTrue);
       expect(signingInstance.verify(testSignature, testMsg, PublicKey.proto(mainKey.vk.extendedEd25519)), isTrue);
     });
 
     test("importWallet: an invalid mnemonic produces correct error", () async {
       final (_, walletApi) = getWalletApi();
 
-      final wallet = (await walletApi.createNewWallet(password)).get();
+      final wallet = await walletApi.createNewWallet(password);
       final mnemonic = [...wallet.mnemonic, "extraWord"];
-      final importedWallet = await walletApi.importWallet(mnemonic, password);
-      expect(importedWallet.isLeft, isTrue);
-      expect(importedWallet.left, WalletApiFailure.failedToInitializeWallet());
+
+      try {
+        await walletApi.importWallet(mnemonic, password);
+        fail('Expected WalletApiFailure.failedToInitializeWallet to be thrown');
+      } catch (e) {
+        expect(e, isA<WalletApiFailure>());
+        expect((e as WalletApiFailure).type, WalletApiFailureType.failedToInitializeWallet);
+      }
     });
 
     test("importWalletAndSave: verify a save failure returns the correct error", () async {
       final (_, walletApi) = getWalletApi();
 
-      final wallet = (await walletApi.createNewWallet(password)).get();
-      final importedWallet = await walletApi.importWalletAndSave(wallet.mnemonic, password, name: "error");
-      expect(importedWallet.isLeft, isTrue);
-      expect(importedWallet.left, WalletApiFailure.failedToSaveWallet());
+      final wallet = await walletApi.createNewWallet(password);
+
+      try {
+        await walletApi.importWalletAndSave(wallet.mnemonic, password, name: "error");
+        fail('Expected WalletApiFailure.failedToSaveWallet to be thrown');
+      } catch (e) {
+        expect(e, isA<WalletApiFailure>());
+        expect((e as WalletApiFailure).type, WalletApiFailureType.failedToSaveWallet);
+      }
     });
 
     test("saveMnemonic: verify a simple save", () async {
       final (mockWalletKeyApi, walletApi) = getWalletApi();
 
       const name = "test";
-      final res = await walletApi.saveMnemonic(["a", "b", "c"], mnemonicName: name);
-      expect(res.isRight, isTrue);
+      await walletApi.saveMnemonic(["a", "b", "c"], mnemonicName: name);
       expect(mockWalletKeyApi.mnemonicInstance.containsKey(name), isTrue);
     });
   });

@@ -1,10 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:fixnum/fixnum.dart';
-import 'package:protobuf/protobuf.dart';
-
 import 'package:plasma_protobuf/google_protobuf.dart' hide Value;
 import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:protobuf/protobuf.dart';
 
 import '../../common/common.dart';
 import '../../utils/extensions.dart';
@@ -137,7 +136,8 @@ abstract class TransactionBuilderApiDefinition {
   ///                      ignored.
   ///
   /// Returns an unproven transaction.
-  Future<Either<BuilderError, IoTransaction>> buildTransferAllTransaction(
+  /// Throws [BuilderError] if the transaction cannot be built.
+  Future<IoTransaction> buildTransferAllTransaction(
     List<Txo> txos,
     Lock_Predicate lockPredicateFrom,
     LockAddress recipientLockAddress,
@@ -169,7 +169,8 @@ abstract class TransactionBuilderApiDefinition {
   /// - [fee]: The transaction fee. The txos must contain enough LVLs to satisfy this fee
   ///
   /// Returns an unproven transaction.
-  Future<Either<BuilderError, IoTransaction>> buildTransferAmountTransaction(
+  /// Throws [BuilderError] if the transaction cannot be built.
+  Future<IoTransaction> buildTransferAmountTransaction(
     ValueTypeIdentifier transferType,
     List<Txo> txos,
     Lock_Predicate lockPredicateFrom,
@@ -195,9 +196,9 @@ abstract class TransactionBuilderApiDefinition {
   /// - `fee`: Transaction fee.
   ///
   /// Returns:
-  /// - `Future<Either<BuilderError, IoTransaction>>`: A future that resolves to either a
-  ///   `BuilderError` or a successfully constructed `IoTransaction`.
-  Either<BuilderError, IoTransaction> buildGroupMintingTransaction(
+  /// - `IoTransaction`: A successfully constructed `IoTransaction`.
+  /// Throws [BuilderError] if the transaction cannot be built.
+  IoTransaction buildGroupMintingTransaction(
     List<Txo> txos,
     Lock_Predicate lockPredicateFrom,
     GroupPolicy groupPolicy,
@@ -227,7 +228,8 @@ abstract class TransactionBuilderApiDefinition {
   /// - [changeAddress]: The LockAddress to send the change to.
   /// - [fee]: The transaction fee. The txos must contain enough LVLs to satisfy this fee
   ///
-  /// Returns an unproven Series Constructor minting transaction if possible. Else, an error.
+  /// Returns an unproven Series Constructor minting transaction if possible.
+  /// Throws [BuilderError] if the transaction cannot be built.
   IoTransaction buildSeriesMintingTransaction(
     List<Txo> txos,
     Lock_Predicate lockPredicateFrom,
@@ -255,7 +257,8 @@ abstract class TransactionBuilderApiDefinition {
   /// - `commitment`: Optional commitment for the minted assets.
   ///
   /// Returns:
-  /// - `Future<IoTransaction>`: A future that resolves to a successfully constructed `IoTransaction`.
+  /// - `IoTransaction`: A successfully constructed `IoTransaction`.
+  /// Throws [BuilderError] if the transaction cannot be built.
   IoTransaction buildAssetMintingTransaction(
     AssetMintingStatement mintingStatement,
     List<Txo> txos,
@@ -286,7 +289,8 @@ abstract class TransactionBuilderApiDefinition {
   /// - [ephemeralMetadata]: Optional ephemeral metadata to include in the merged asset token.
   /// - [commitment]: Optional commitment to include in the merged asset token.
   ///
-  /// Returns an unproven asset merge transaction if possible. Else, an error.
+  /// Returns an unproven asset merge transaction if possible.
+  /// Throws [BuilderError] if the transaction cannot be built.
   IoTransaction buildAssetMergeTransaction(
     List<TransactionOutputAddress> utxosToMerge,
     List<Txo> txos,
@@ -344,9 +348,14 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
   }
 
   @override
-  Future<Either<BuilderError, IoTransaction>> buildTransferAllTransaction(List<Txo> txos,
-      Lock_Predicate lockPredicateFrom, LockAddress recipientLockAddress, LockAddress changeLockAddress, int fee,
-      {ValueTypeIdentifier? tokenIdentifier}) async {
+  Future<IoTransaction> buildTransferAllTransaction(
+    List<Txo> txos,
+    Lock_Predicate lockPredicateFrom,
+    LockAddress recipientLockAddress,
+    LockAddress changeLockAddress,
+    int fee, {
+    ValueTypeIdentifier? tokenIdentifier,
+  }) async {
     try {
       // Convert lockPredicateFrom to lockAddress
       final fromLockAddr = lockAddress(Lock()..predicate = lockPredicateFrom);
@@ -365,40 +374,41 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
           _buildUtxos(filteredTxos, tokenIdentifier, null, recipientLockAddress, changeLockAddress, fee);
 
       // Return IoTransaction
-      return Either.right(IoTransaction(inputs: stxos, outputs: utxosResult, datum: d));
+      return IoTransaction(inputs: stxos, outputs: utxosResult, datum: d);
     } on Exception catch (e) {
-      return Either.left(BuilderRuntimeError('Failed to build transfer all transaction. cause: $e', e));
+      throw BuilderRuntimeError('Failed to build transfer all transaction. cause: $e', e);
     }
   }
 
   @override
-  Future<Either<BuilderError, IoTransaction>> buildTransferAmountTransaction(
-      ValueTypeIdentifier transferType,
-      List<Txo> txos,
-      Lock_Predicate lockPredicateFrom,
-      int amount,
-      LockAddress recipientLockAddress,
-      LockAddress changeLockAddress,
-      int fee) async {
-    final fromLockAddr = lockAddress(Lock(predicate: lockPredicateFrom));
-    final filteredTxos = txos.where((txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType).toList();
-
-    // validate transfer params
+  Future<IoTransaction> buildTransferAmountTransaction(
+    ValueTypeIdentifier transferType,
+    List<Txo> txos,
+    Lock_Predicate lockPredicateFrom,
+    int amount,
+    LockAddress recipientLockAddress,
+    LockAddress changeLockAddress,
+    int fee,
+  ) async {
     try {
+      final fromLockAddr = lockAddress(Lock(predicate: lockPredicateFrom));
+      final filteredTxos = txos.where((txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType).toList();
+
+      // validate transfer params
       UserInputValidations.validateTransferAmountParams(
           filteredTxos, fromLockAddr, amount.toInt128(), transferType, fee);
+
+      final stxoAttestation = unprovenAttestation(lockPredicateFrom);
+      final d = datum();
+      final stxos = _buildStxos(filteredTxos, stxoAttestation);
+
+      final utxos =
+          _buildUtxos(filteredTxos, transferType, amount.toBigInt, recipientLockAddress, changeLockAddress, fee);
+
+      return IoTransaction(inputs: stxos, outputs: utxos, datum: d);
     } on Exception catch (e) {
-      return Either.left(BuilderRuntimeError('Failed to build transfer amount transaction. cause: $e', e));
+      throw BuilderRuntimeError('Failed to build transfer amount transaction. cause: $e', e);
     }
-
-    final stxoAttestation = unprovenAttestation(lockPredicateFrom);
-    final d = datum();
-    final stxos = _buildStxos(filteredTxos, stxoAttestation);
-
-    final utxos =
-        _buildUtxos(filteredTxos, transferType, amount.toBigInt, recipientLockAddress, changeLockAddress, fee);
-
-    return Either.right(IoTransaction(inputs: stxos, outputs: utxos, datum: d));
   }
 
   List<SpentTransactionOutput> _buildStxos(List<Txo> txos, Attestation attestation) {
@@ -469,7 +479,7 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
   }
 
   @override
-  Either<BuilderError, IoTransaction> buildGroupMintingTransaction(
+  IoTransaction buildGroupMintingTransaction(
     List<Txo> txos,
     Lock_Predicate lockPredicateFrom,
     GroupPolicy groupPolicy,
@@ -484,17 +494,13 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
       final filteredTxos = txos.where((txo) => txo.transactionOutput.value.typeIdentifier is! UnknownType).toList();
 
       // Validate constructor minting parameters
-      try {
-        UserInputValidations.validateConstructorMintingParams(
-          filteredTxos,
-          registrationLockAddr,
-          groupPolicy.registrationUtxo,
-          quantityToMint.toInt128(),
-          fee,
-        );
-      } catch (e) {
-        return Either.left(BuilderError.userInputErrors([e as BuilderError]));
-      }
+      UserInputValidations.validateConstructorMintingParams(
+        filteredTxos,
+        registrationLockAddr,
+        groupPolicy.registrationUtxo,
+        quantityToMint.toInt128(),
+        fee,
+      );
 
       final stxoAttestation = unprovenAttestation(lockPredicateFrom);
       final d = datum();
@@ -507,14 +513,14 @@ class TransactionBuilderApi implements TransactionBuilderApiDefinition {
       final utxoChange = _buildUtxos(filteredTxos, null, null, changeAddress, changeAddress, fee);
 
       // Return IoTransaction
-      return Either.right(IoTransaction(
+      return IoTransaction(
         inputs: stxos,
         outputs: [...utxoChange, utxoMinted],
         datum: d,
         groupPolicies: [Datum_GroupPolicy(event: groupPolicy)],
-      ));
+      );
     } on Exception catch (e) {
-      return Either.left(BuilderRuntimeError('Failed to build group minting transaction. cause: $e', e));
+      throw BuilderRuntimeError('Failed to build group minting transaction. cause: $e', e);
     }
   }
 

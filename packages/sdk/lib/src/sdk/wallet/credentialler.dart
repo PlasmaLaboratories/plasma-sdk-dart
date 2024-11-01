@@ -1,5 +1,5 @@
-import 'package:protobuf/protobuf.dart';
 import 'package:plasma_protobuf/plasma_protobuf.dart';
+import 'package:protobuf/protobuf.dart';
 
 import '../../common/functional/either.dart';
 import '../../crypto/signing/extended_ed25519/extended_ed25519.dart';

@@ -1,6 +1,5 @@
 import 'package:plasma_protobuf/plasma_protobuf.dart';
 
-import '../../common/functional/either.dart';
 import '../builders/locks/lock_template.dart';
 
 /// Defines a data API for storing and retrieving wallet state.
@@ -62,8 +61,8 @@ abstract class WalletStateAlgebra {
   /// [template] A String label of the template to validate with
   /// [someState] The optional state index to validate with. If not provided, the next state for the given fellowship
   /// and template pair will be used
-  /// Returns the indices for the given fellowship, template and optional state if valid. If not, the relevant errors
-  Either<String, Indices> validateCurrentIndicesForFunds(String fellowship, String template, int? someState);
+  /// Returns the indices for the given fellowship, template and optional state if valid. If not throws the relevant errors
+  Indices validateCurrentIndicesForFunds(String fellowship, String template, int? someState);
 
   /// Get the next available indices for the given fellowship and template
   ///

@@ -9,8 +9,6 @@ import '../../crypto/accumulators/accumulators.dart';
 import '../../crypto/accumulators/merkle/merkle_tree.dart';
 
 class MergingOps {
-  static const int MaxDataLength = 15360;
-
   // We strip ephemeral metadata and commitment because when splitting the alloy in the future, these fields may be different in the outputs.
   static Uint8List getPreimageBytes(Value_Asset asset) {
     final cleared = asset

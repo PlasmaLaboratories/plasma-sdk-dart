@@ -1,5 +1,4 @@
 import 'package:plasma_protobuf/plasma_protobuf.dart';
-import 'package:plasma_sdk/src/common/functional/either.dart';
 import 'package:plasma_sdk/src/sdk/builders/locks/lock_template.dart';
 import 'package:plasma_sdk/src/sdk/common/contains_evidence.dart';
 import 'package:plasma_sdk/src/sdk/data_api/wallet_state_algebra.dart';
@@ -93,7 +92,7 @@ class MockWalletStateApi extends WalletStateAlgebra {
   }
 
   @override
-  Either<String, Indices> validateCurrentIndicesForFunds(String fellowship, String contract, int? someState) {
+  Indices validateCurrentIndicesForFunds(String fellowship, String contract, int? someState) {
     throw UnimplementedError();
   }
 

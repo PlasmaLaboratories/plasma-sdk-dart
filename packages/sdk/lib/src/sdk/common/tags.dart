@@ -1,6 +1,6 @@
 typedef Tags = Identifier;
 
-/// See spec at https://github.com/Topl/protobuf-specs/blob/main/proto/brambl/models/identifier.proto
+/// See spec at https://github.com/PlasmaLaboratories/plasma-protobuf-specs/blob/main/proto/sdk/models/identifier.proto
 class Identifier {
   static const String lock32 = 'box_lock_32';
   static const String lock64 = 'box_lock_64';
