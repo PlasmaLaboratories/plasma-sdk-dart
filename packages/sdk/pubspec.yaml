@@ -1,6 +1,6 @@
 name: plasma_sdk
 description: Plasma's SDK implemented in Dart for building the next blockchain for good.
-version: 0.1.0
+version: 0.0.0
 homepage: "https://plasma.to/"
 repository: https://github.com/PlasmaLab/plasma-sdk-dart
 

@@ -3,12 +3,10 @@ import 'dart:typed_data';
 
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sembast/sembast.dart';
 import 'package:plasma_protobuf/plasma_protobuf.dart' as m;
 import 'package:plasma_sdk/plasma_sdk.dart'
     show
         AddressCodecs,
-        Either,
         Encoding,
         ExtendedEd25519,
         HeightTemplate,
@@ -27,6 +25,7 @@ import 'package:plasma_service_kit/models/fellowship.dart';
 import 'package:plasma_service_kit/models/template.dart';
 import 'package:plasma_service_kit/models/verification_key.dart' as sk;
 import 'package:plasma_service_kit/models/verification_key.dart';
+import 'package:sembast/sembast.dart';
 
 /// An implementation of the WalletStateAlgebra that uses a database to store state information.
 

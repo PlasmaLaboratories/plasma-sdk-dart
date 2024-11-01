@@ -1,6 +1,6 @@
 name: plasma_service_kit
-description: Topl's ready to use toolkit for Flutter on the Topl Blockchain
-version: 0.1.0
+description: Plasma's ready to use toolkit for Flutter on the Plasma Blockchain
+version: 0.0.0
 homepage: "https://www.plasma.to"
 repository: https://github.com/PlasmaLaboratories/plasma_sdk_dart
 
@@ -15,7 +15,7 @@ dependencies:
 
   #plasma
   plasma_protobuf: ^0.1.0
-  plasma_sdk: ^0.1.0
+  plasma_sdk: ^0.0.0
 
   # types
   fixnum: ^1.1.0
@@ -35,9 +35,6 @@ dev_dependencies:
   test: ^1.21.0
   dependency_validator: ^3.2.2
   build_runner: ^2.1.1
-
-  #storage
-  isar_generator: ^3.1.0+1
 
 
 # For information on the generic Dart part of this file, see the
