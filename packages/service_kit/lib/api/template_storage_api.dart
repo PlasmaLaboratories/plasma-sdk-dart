@@ -9,9 +9,11 @@ class TemplateStorageApi implements sdk.TemplateStorageAlgebra {
 
   @override
   Future<int> addTemplate(sdk.WalletTemplate walletTemplate) async {
-    final latest = await templatesStore.findFirst(_instance, finder: Finder(sortOrders: [SortOrder("y", false)]));
+    final latest = await templatesStore.findFirst(_instance,
+        finder: Finder(sortOrders: [SortOrder("y", false)]));
     final y = latest != null ? ((latest["y"]! as int) + 1) : 0;
-    final template = Template(y: y, lock: walletTemplate.lockTemplate, name: walletTemplate.name);
+    final template = Template(
+        y: y, lock: walletTemplate.lockTemplate, name: walletTemplate.name);
     try {
       return templatesStore.add(_instance, template.toSembast);
     } catch (e) {
@@ -25,7 +27,8 @@ class TemplateStorageApi implements sdk.TemplateStorageAlgebra {
       final result = await templatesStore.find(_instance);
 
       return result
-          .map((json) => sdk.WalletTemplate(json.key, json["template"]! as String, json["lock"]! as String))
+          .map((json) => sdk.WalletTemplate(
+              json.key, json["template"]! as String, json["lock"]! as String))
           .toList();
     } catch (e) {
       rethrow;

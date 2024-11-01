@@ -40,7 +40,8 @@ abstract class WalletKeyApiAlgebra {
   /// to manage the names of the wallet identities if multiple will be used.
   ///
   /// Throws [WalletKeyException] if the update fails due to an underlying cause (for example, does not exist).
-  Future<void> updateMainKeyVaultStore(VaultStore mainKeyVaultStore, String name);
+  Future<void> updateMainKeyVaultStore(
+      VaultStore mainKeyVaultStore, String name);
 
   /// Delete a persisted [VaultStore] for the Topl Main Secret Key.
   ///
@@ -57,20 +58,27 @@ class WalletKeyException implements Exception {
   const WalletKeyException(this.type, this.message);
 
   factory WalletKeyException.decodeVaultStore({String? context}) =>
-      WalletKeyException(WalletKeyExceptionType.decodeVaultStoreException, context);
+      WalletKeyException(
+          WalletKeyExceptionType.decodeVaultStoreException, context);
   factory WalletKeyException.vaultStoreDoesNotExist({String? context}) =>
-      WalletKeyException(WalletKeyExceptionType.vaultStoreDoesNotExistException, context);
+      WalletKeyException(
+          WalletKeyExceptionType.vaultStoreDoesNotExistException, context);
   factory WalletKeyException.mnemonicDoesNotExist({String? context}) =>
-      WalletKeyException(WalletKeyExceptionType.mnemonicDoesNotExistException, context);
+      WalletKeyException(
+          WalletKeyExceptionType.mnemonicDoesNotExistException, context);
 
   factory WalletKeyException.vaultStoreSave({String? context}) =>
-      WalletKeyException(WalletKeyExceptionType.vaultStoreSaveException, context);
+      WalletKeyException(
+          WalletKeyExceptionType.vaultStoreSaveException, context);
   factory WalletKeyException.vaultStoreInvalid({String? context}) =>
-      WalletKeyException(WalletKeyExceptionType.vaultStoreInvalidException, context);
+      WalletKeyException(
+          WalletKeyExceptionType.vaultStoreInvalidException, context);
   factory WalletKeyException.vaultStoreDelete({String? context}) =>
-      WalletKeyException(WalletKeyExceptionType.vaultStoreDeleteException, context);
+      WalletKeyException(
+          WalletKeyExceptionType.vaultStoreDeleteException, context);
   factory WalletKeyException.vaultStoreNotInitialized({String? context}) =>
-      WalletKeyException(WalletKeyExceptionType.vaultStoreNotInitialized, context);
+      WalletKeyException(
+          WalletKeyExceptionType.vaultStoreNotInitialized, context);
   final String? message;
   final WalletKeyExceptionType type;
 }

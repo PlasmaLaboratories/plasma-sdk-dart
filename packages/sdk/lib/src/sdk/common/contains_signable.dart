@@ -63,7 +63,8 @@ class ContainsSignable {
 }
 
 extension IoTransactionContainsSignableExtensions on IoTransaction {
-  SignableBytes get signable => ContainsSignable.ioTransaction(this).signableBytes;
+  SignableBytes get signable =>
+      ContainsSignable.ioTransaction(this).signableBytes;
 }
 
 extension ImmutableBytesContainsSignableExtension on ImmutableBytes {

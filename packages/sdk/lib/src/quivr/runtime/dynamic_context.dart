@@ -11,8 +11,14 @@ import 'quivr_runtime_error.dart';
 
 // todo: rework like in ts
 class DynamicContext {
-  DynamicContext(this.datum, this.interfaces, this.signingRoutines, this.hashingRoutines, this.signableBytes,
-      this.currentTick, this.heightOf);
+  DynamicContext(
+      this.datum,
+      this.interfaces,
+      this.signingRoutines,
+      this.hashingRoutines,
+      this.signableBytes,
+      this.currentTick,
+      this.heightOf);
   Map<String, Datum?> datum;
 
   Map<String, ParsableDataInterface> interfaces;
@@ -27,8 +33,10 @@ class DynamicContext {
   Int64? Function(String) heightOf;
 
   /// can return wrapped[ContextError.failedToFindDigestVerifier]
-  QuivrResult<DigestVerification> digestVerify(String routine, DigestVerification verification) {
-    final verifier = hashingRoutines.containsKey(routine) ? hashingRoutines[routine] : null;
+  QuivrResult<DigestVerification> digestVerify(
+      String routine, DigestVerification verification) {
+    final verifier =
+        hashingRoutines.containsKey(routine) ? hashingRoutines[routine] : null;
 
     // uses equality operator instead of .isNull for type promotion
     if (verifier == null) {
@@ -42,8 +50,10 @@ class DynamicContext {
   }
 
   /// can return wrapped [ContextError.failedToFindSignatureVerifier]
-  QuivrResult<SignatureVerification> signatureVerify(String routine, SignatureVerification verification) {
-    final verifier = signingRoutines.containsKey(routine) ? signingRoutines[routine] : null;
+  QuivrResult<SignatureVerification> signatureVerify(
+      String routine, SignatureVerification verification) {
+    final verifier =
+        signingRoutines.containsKey(routine) ? signingRoutines[routine] : null;
 
     // uses equality operator instead of .isNull for type promotion
     if (verifier == null) {

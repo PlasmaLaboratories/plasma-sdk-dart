@@ -10,7 +10,8 @@ class MockWalletKeyApi extends WalletKeyApiAlgebra {
   static const defaultName = "default";
 
   @override
-  Future<void> saveMainKeyVaultStore(VaultStore mainKeyVaultStore, String? name) async {
+  Future<void> saveMainKeyVaultStore(
+      VaultStore mainKeyVaultStore, String? name) async {
     final n = name ?? defaultName;
     if (n == 'error') {
       throw WalletKeyException.vaultStoreSave();
@@ -34,7 +35,8 @@ class MockWalletKeyApi extends WalletKeyApiAlgebra {
   }
 
   @override
-  Future<void> updateMainKeyVaultStore(VaultStore mainKeyVaultStore, String? name) async {
+  Future<void> updateMainKeyVaultStore(
+      VaultStore mainKeyVaultStore, String? name) async {
     final n = name ?? defaultName;
     final json = mainKeyVaultStoreInstance[n];
     if (json == null) {

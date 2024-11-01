@@ -9,7 +9,8 @@ import '../../crypto/generation/key_initializer/extended_ed25519_initializer.dar
 import '../../crypto/generation/mnemonic/entropy.dart';
 import '../../crypto/generation/mnemonic/mnemonic.dart';
 import '../../crypto/signing/extended_ed25519/extended_ed25519.dart';
-import '../../crypto/signing/extended_ed25519/extended_ed25519_spec.dart' as x_spec;
+import '../../crypto/signing/extended_ed25519/extended_ed25519_spec.dart'
+    as x_spec;
 import '../../utils/extensions.dart';
 import '../data_api/wallet_key_api_algebra.dart';
 import '../utils/proto_converters.dart';
@@ -35,7 +36,8 @@ sealed class WalletApiDefinition {
   /// [mnemonicName] - A name used to identify the mnemonic. Defaults to "mnemonic".
   ///
   /// Throws [WalletApiFailure] if saving the mnemonic fails.
-  Future<void> saveMnemonic(List<String> mnemonic, {String mnemonicName = 'mnemonic'});
+  Future<void> saveMnemonic(List<String> mnemonic,
+      {String mnemonicName = 'mnemonic'});
 
   /// Loads a wallet.
   ///
@@ -100,7 +102,8 @@ sealed class WalletApiDefinition {
       String name = 'default',
       String mnemonicName = 'mnemonic'}) async {
     try {
-      final walletRes = await createNewWallet(password, passphrase: passphrase, mLen: mLen);
+      final walletRes =
+          await createNewWallet(password, passphrase: passphrase, mLen: mLen);
       await saveWallet(walletRes.mainKeyVaultStore, name: name);
       await saveMnemonic(walletRes.mnemonic, mnemonicName: mnemonicName);
       return walletRes;
@@ -134,7 +137,8 @@ sealed class WalletApiDefinition {
   /// [yTemplate] - The second path index of the child key pair to derive. Represents the template index.
   ///
   /// Returns the protobuf encoded keys of the child key pair.
-  KeyPair deriveChildKeysPartial(KeyPair keyPair, int xFellowship, int yTemplate);
+  KeyPair deriveChildKeysPartial(
+      KeyPair keyPair, int xFellowship, int yTemplate);
 
   /// Derives a child verification key pair one step down from a parent verification key. Note that this is a Soft
   /// Derivation.
@@ -153,7 +157,8 @@ sealed class WalletApiDefinition {
   ///          the wallet identities if multiple will be used.
   ///
   /// Throw [WalletApiFailure] if unsuccessful
-  Future<KeyPair> loadAndExtractMainKey(List<int> password, {String name = defaultName}) async {
+  Future<KeyPair> loadAndExtractMainKey(List<int> password,
+      {String name = defaultName}) async {
     try {
       final walletRes = await loadWallet(name: name);
       final keyPair = extractMainKey(walletRes, password);
@@ -175,12 +180,14 @@ sealed class WalletApiDefinition {
   ///
   /// Returns the wallet's new [VaultStore] if creation and save was successful.
   /// Throws [WalletApiFailure] if unsuccessful.
-  Future<VaultStore> updateWalletPassword(List<int> oldPassword, List<int> newPassword,
+  Future<VaultStore> updateWalletPassword(
+      List<int> oldPassword, List<int> newPassword,
       {String name = defaultName}) async {
     try {
       final oldWallet = await loadWallet(name: name);
       final mainKey = extractMainKey(oldWallet, oldPassword);
-      final newWallet = buildMainKeyVaultStore(mainKey.writeToBuffer(), newPassword);
+      final newWallet =
+          buildMainKeyVaultStore(mainKey.writeToBuffer(), newPassword);
       await updateWallet(newWallet, name: name);
       return newWallet;
     } on WalletApiFailure {
@@ -201,7 +208,8 @@ sealed class WalletApiDefinition {
   ///
   /// Returns the wallet's [VaultStore] if import and save was successful.
   /// Throws [WalletApiFailure] if unsuccessful.
-  Future<VaultStore> importWallet(List<String> mnemonic, List<int> password, {String? passphrase});
+  Future<VaultStore> importWallet(List<String> mnemonic, List<int> password,
+      {String? passphrase});
 
   /// Import a wallet from a mnemonic and save it.
   ///
@@ -214,10 +222,12 @@ sealed class WalletApiDefinition {
   ///
   /// Returns the wallet's [VaultStore] if import and save was successful.
   /// Throws [WalletApiFailure] if unsuccessful.
-  Future<VaultStore> importWalletAndSave(List<String> mnemonic, List<int> password,
+  Future<VaultStore> importWalletAndSave(
+      List<String> mnemonic, List<int> password,
       {String? passphrase, String name = defaultName}) async {
     try {
-      final walletRes = await importWallet(mnemonic, password, passphrase: passphrase);
+      final walletRes =
+          await importWallet(mnemonic, password, passphrase: passphrase);
       await saveWallet(walletRes, name: name);
       return walletRes;
     } on WalletApiFailure {
@@ -259,8 +269,9 @@ class WalletApi extends WalletApiDefinition {
   @override
   KeyPair extractMainKey(VaultStore vaultStore, List<int> password) {
     try {
-      final decoded = VaultStore.decodeCipher(vaultStore, password.toUint8List())
-          .getOrThrow(exception: WalletApiFailure.failedToDecodeWallet());
+      final decoded =
+          VaultStore.decodeCipher(vaultStore, password.toUint8List())
+              .getOrThrow(exception: WalletApiFailure.failedToDecodeWallet());
       final keypair = KeyPair.fromBuffer(decoded);
       return keypair;
     } on WalletApiFailure catch (e) {
@@ -273,48 +284,59 @@ class WalletApi extends WalletApiDefinition {
 
   @override
   KeyPair deriveChildKeys(KeyPair keyPair, Indices idx) {
-    assert(keyPair.sk.hasExtendedEd25519(), "keyPair must be an extended Ed25519 key");
-    assert(keyPair.vk.hasExtendedEd25519(), "keyPair must be an extended Ed25519 key");
+    assert(keyPair.sk.hasExtendedEd25519(),
+        "keyPair must be an extended Ed25519 key");
+    assert(keyPair.vk.hasExtendedEd25519(),
+        "keyPair must be an extended Ed25519 key");
 
     final xCoordinate = HardenedIndex(idx.x);
     final yCoordinate = SoftIndex(idx.y);
     final zCoordinate = SoftIndex(idx.z);
 
     final sk = x_spec.SecretKey.proto(keyPair.sk.extendedEd25519);
-    final kp = instance.deriveKeyPairFromChildPath(sk, [xCoordinate, yCoordinate, zCoordinate]);
+    final kp = instance.deriveKeyPairFromChildPath(
+        sk, [xCoordinate, yCoordinate, zCoordinate]);
     return ProtoConverters.keyPairToProto(kp);
   }
 
   @override
-  KeyPair deriveChildKeysPartial(KeyPair keyPair, int xFellowship, int yTemplate) {
-    assert(keyPair.sk.hasExtendedEd25519(), "keyPair must be an extended Ed25519 key");
-    assert(keyPair.vk.hasExtendedEd25519(), "keyPair must be an extended Ed25519 key");
+  KeyPair deriveChildKeysPartial(
+      KeyPair keyPair, int xFellowship, int yTemplate) {
+    assert(keyPair.sk.hasExtendedEd25519(),
+        "keyPair must be an extended Ed25519 key");
+    assert(keyPair.vk.hasExtendedEd25519(),
+        "keyPair must be an extended Ed25519 key");
 
     final xCoordinate = HardenedIndex(xFellowship);
     final yCoordinate = SoftIndex(yTemplate);
 
     final sk = x_spec.SecretKey.proto(keyPair.sk.extendedEd25519);
-    final kp = instance.deriveKeyPairFromChildPath(sk, [xCoordinate, yCoordinate]);
+    final kp =
+        instance.deriveKeyPairFromChildPath(sk, [xCoordinate, yCoordinate]);
     return ProtoConverters.keyPairToProto(kp);
   }
 
   @override
   VerificationKey deriveChildVerificationKey(VerificationKey vk, int idx) {
-    assert(vk.hasExtendedEd25519(), "verification key must be an extended Ed25519 key");
+    assert(vk.hasExtendedEd25519(),
+        "verification key must be an extended Ed25519 key");
 
-    final pk = instance.deriveChildVerificationKey(x_spec.PublicKey.proto(vk.extendedEd25519), SoftIndex(idx));
+    final pk = instance.deriveChildVerificationKey(
+        x_spec.PublicKey.proto(vk.extendedEd25519), SoftIndex(idx));
     return ProtoConverters.publicKeyToProto(pk);
   }
 
   @override
   Future<NewWalletResult> createNewWallet(List<int> password,
-      {String? passphrase, MnemonicSize mLen = const MnemonicSize.words12()}) async {
+      {String? passphrase,
+      MnemonicSize mLen = const MnemonicSize.words12()}) async {
     try {
       final entropy = Entropy.generate(size: mLen);
-      final mainkey = entropyToMainKey(entropy, passphrase: passphrase).writeToBuffer();
+      final mainkey =
+          entropyToMainKey(entropy, passphrase: passphrase).writeToBuffer();
       final vaultStore = buildMainKeyVaultStore(mainkey, password);
-      final mnemonic =
-          (await Entropy.toMnemonicString(entropy)).getOrThrow(exception: WalletApiFailure.failedToInitializeWallet());
+      final mnemonic = (await Entropy.toMnemonicString(entropy))
+          .getOrThrow(exception: WalletApiFailure.failedToInitializeWallet());
       return NewWalletResult(mnemonic: mnemonic, mainKeyVaultStore: vaultStore);
     } on WalletApiFailure {
       rethrow;
@@ -324,11 +346,13 @@ class WalletApi extends WalletApiDefinition {
   }
 
   @override
-  Future<VaultStore> importWallet(List<String> mnemonic, List<int> password, {String? passphrase}) async {
+  Future<VaultStore> importWallet(List<String> mnemonic, List<int> password,
+      {String? passphrase}) async {
     try {
       final entropy = (await Entropy.fromMnemonicString(mnemonic.join(" ")))
           .getOrThrow(exception: WalletApiFailure.failedToInitializeWallet());
-      final mainKey = entropyToMainKey(entropy, passphrase: passphrase).writeToBuffer();
+      final mainKey =
+          entropyToMainKey(entropy, passphrase: passphrase).writeToBuffer();
       final vaultStore = buildMainKeyVaultStore(mainKey, password);
       return vaultStore;
     } on WalletApiFailure {
@@ -339,7 +363,8 @@ class WalletApi extends WalletApiDefinition {
   }
 
   @override
-  Future<void> saveWallet(VaultStore vaultStore, {String name = WalletApiDefinition.defaultName}) async {
+  Future<void> saveWallet(VaultStore vaultStore,
+      {String name = WalletApiDefinition.defaultName}) async {
     try {
       await walletKeyApi.saveMainKeyVaultStore(vaultStore, name);
     } catch (e) {
@@ -348,7 +373,8 @@ class WalletApi extends WalletApiDefinition {
   }
 
   @override
-  Future<void> saveMnemonic(List<String> mnemonic, {String mnemonicName = 'mnemonic'}) async {
+  Future<void> saveMnemonic(List<String> mnemonic,
+      {String mnemonicName = 'mnemonic'}) async {
     try {
       await walletKeyApi.saveMnemonic(mnemonic, mnemonicName);
     } catch (e) {
@@ -357,7 +383,8 @@ class WalletApi extends WalletApiDefinition {
   }
 
   @override
-  Future<VaultStore> loadWallet({String name = WalletApiDefinition.defaultName}) async {
+  Future<VaultStore> loadWallet(
+      {String name = WalletApiDefinition.defaultName}) async {
     try {
       return await walletKeyApi.getMainKeyVaultStore(name);
     } catch (e) {
@@ -366,7 +393,8 @@ class WalletApi extends WalletApiDefinition {
   }
 
   @override
-  Future<void> updateWallet(VaultStore newWallet, {String name = WalletApiDefinition.defaultName}) async {
+  Future<void> updateWallet(VaultStore newWallet,
+      {String name = WalletApiDefinition.defaultName}) async {
     try {
       await walletKeyApi.updateMainKeyVaultStore(newWallet, name);
     } catch (e) {
@@ -375,7 +403,8 @@ class WalletApi extends WalletApiDefinition {
   }
 
   @override
-  Future<void> deleteWallet({String name = WalletApiDefinition.defaultName}) async {
+  Future<void> deleteWallet(
+      {String name = WalletApiDefinition.defaultName}) async {
     try {
       await walletKeyApi.deleteMainKeyVaultStore(name);
     } catch (e) {
@@ -392,10 +421,13 @@ class WalletApi extends WalletApiDefinition {
   }
 
   KeyPair entropyToMainKey(Entropy entropy, {String? passphrase}) {
-    final rootKey = ExtendedEd25519Intializer(instance).fromEntropy(entropy, password: passphrase);
+    final rootKey = ExtendedEd25519Intializer(instance)
+        .fromEntropy(entropy, password: passphrase);
     final p = HardenedIndex(purpose); // following CIP-1852
-    final c = HardenedIndex(coinType); // Topl coin type registered with SLIP-0044
-    return ProtoConverters.keyPairToProto(instance.deriveKeyPairFromChildPath(rootKey as x_spec.SecretKey, [p, c]));
+    final c =
+        HardenedIndex(coinType); // Topl coin type registered with SLIP-0044
+    return ProtoConverters.keyPairToProto(instance
+        .deriveKeyPairFromChildPath(rootKey as x_spec.SecretKey, [p, c]));
   }
 }
 
@@ -404,7 +436,8 @@ class NewWalletResult {
   final List<String> mnemonic;
   final VaultStore mainKeyVaultStore;
 
-  NewWalletResult copyWith({List<String>? mnemonic, VaultStore? mainKeyVaultStore}) {
+  NewWalletResult copyWith(
+      {List<String>? mnemonic, VaultStore? mainKeyVaultStore}) {
     return NewWalletResult(
       mnemonic: mnemonic ?? this.mnemonic,
       mainKeyVaultStore: mainKeyVaultStore ?? this.mainKeyVaultStore,
@@ -438,7 +471,10 @@ class WalletApiFailure implements Exception {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is WalletApiFailure && runtimeType == other.runtimeType && type == other.type && message == other.message;
+      other is WalletApiFailure &&
+          runtimeType == other.runtimeType &&
+          type == other.type &&
+          message == other.message;
 
   @override
   int get hashCode => type.hashCode ^ message.hashCode;

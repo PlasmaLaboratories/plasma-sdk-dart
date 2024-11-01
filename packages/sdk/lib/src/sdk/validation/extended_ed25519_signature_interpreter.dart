@@ -35,5 +35,6 @@ class ExtendedEd25519SignatureInterpreter implements SignatureVerifier {
   }
 
   @override
-  dynamic Function(dynamic p1) get definedFunction => throw UnimplementedError();
+  dynamic Function(dynamic p1) get definedFunction =>
+      throw UnimplementedError();
 }

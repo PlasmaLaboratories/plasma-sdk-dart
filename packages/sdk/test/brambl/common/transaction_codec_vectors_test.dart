@@ -12,9 +12,12 @@ void main() {
         final txBytes = Encoding().decodeFromHex(vector.txHex).getOrThrow();
         final tx = IoTransaction.fromBuffer(txBytes)..freeze();
         final signable = ContainsSignable.ioTransaction(tx).signableBytes;
-        final signableHex = Encoding().encodeToHex(Uint8List.fromList(signable.value));
+        final signableHex =
+            Encoding().encodeToHex(Uint8List.fromList(signable.value));
         expect(signableHex, equals(vector.txSignableHex));
-        expect(Encoding().encodeToBase58(Uint8List.fromList(tx.computeId.value)), equals(vector.txId));
+        expect(
+            Encoding().encodeToBase58(Uint8List.fromList(tx.computeId.value)),
+            equals(vector.txId));
       });
     }
   });
@@ -64,7 +67,8 @@ const vectors = [
 ];
 
 class TestVector {
-  const TestVector({required this.txHex, required this.txSignableHex, required this.txId});
+  const TestVector(
+      {required this.txHex, required this.txSignableHex, required this.txId});
 
   final String txHex;
   final String txSignableHex;

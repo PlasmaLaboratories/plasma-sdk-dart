@@ -14,7 +14,9 @@ final Map<String, DigestVerifier> _hashingRoutines = {
   'Blake2b256': Blake2b256DigestInterpreter(),
   'Sha256': Sha256DigestInterpreter()
 };
-final Map<String, SignatureVerifier> _signingRoutines = {'ExtendedEd25519': ExtendedEd25519SignatureInterpreter()};
+final Map<String, SignatureVerifier> _signingRoutines = {
+  'ExtendedEd25519': ExtendedEd25519SignatureInterpreter()
+};
 final Map<String, ParsableDataInterface> _interfaces = {}; // Arbitrary
 
 Int64? _heightOf(String label, Datum? Function(String) heightDatums) {
@@ -28,7 +30,13 @@ Int64? _heightOf(String label, Datum? Function(String) heightDatums) {
 
 class Context extends DynamicContext {
   Context(this.tx, this.curTick, Map<String, Datum?> heightDatums)
-      : super(heightDatums, _interfaces, _signingRoutines, _hashingRoutines, tx.signable, curTick,
+      : super(
+            heightDatums,
+            _interfaces,
+            _signingRoutines,
+            _hashingRoutines,
+            tx.signable,
+            curTick,
             (label) => _heightOf(label, (key) => heightDatums[key]));
   final IoTransaction tx;
   final Int64 curTick;
