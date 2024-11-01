@@ -4,7 +4,6 @@ import 'package:plasma_sdk/plasma_sdk.dart'
         AddressCodecs,
         Either,
         Encoding,
-        GenusQueryAlgebra,
         IndexerQueryAlgebra,
         TransactionBuilderApi,
         ValueTypeIdentifier,

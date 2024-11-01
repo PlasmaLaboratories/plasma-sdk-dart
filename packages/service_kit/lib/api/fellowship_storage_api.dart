@@ -1,6 +1,6 @@
-import 'package:sembast/sembast.dart';
 import 'package:plasma_sdk/plasma_sdk.dart' as sdk;
 import 'package:plasma_service_kit/models/fellowship.dart';
+import 'package:sembast/sembast.dart';
 
 class FellowshipStorageApi implements sdk.FellowshipStorageAlgebra {
   FellowshipStorageApi(this._instance);
