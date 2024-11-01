@@ -36,14 +36,11 @@ class SimpleTransaction {
       final someChangeTemplate = changeCoordinates.$2;
       final someChangeState = changeCoordinates.$3;
 
-      final validationResult =
-          walletStateAlgebra.validateCurrentIndicesForFunds(fromFellowship, fromTemplate, someFromState);
+      walletStateAlgebra.validateCurrentIndicesForFunds(
+          fromFellowship, fromTemplate, someFromState);
 
-      if (validationResult.isLeft) {
-        return Either.left('Invalid params\n ${validationResult.left}');
-      }
-
-      final res = await simpleTransactionAlgebra.createSimpleTransactionFromParams(
+      final res =
+          await simpleTransactionAlgebra.createSimpleTransactionFromParams(
         keyfile: keyfile,
         password: password,
         fromFellowship: fromFellowship,
@@ -60,7 +57,8 @@ class SimpleTransaction {
         tokenType: tokenType,
       );
 
-      return res.fold((p0) => Either.left(p0.description), (_) => Either.right("Transaction successfully created"));
+      return res.fold((p0) => Either.left(p0.description),
+          (_) => Either.right("Transaction successfully created"));
     } catch (e) {
       return Either.left('Unexpected error: $e');
     }
