@@ -368,6 +368,7 @@ class ContainsImmutable {
 
   factory ContainsImmutable.headerEvent(Event_Header event) => ContainsImmutable.int64(event.height);
 
+  // TODO(someone): Scala SDK includes a "TODO" for the series/group policies
   factory ContainsImmutable.iotxEventImmutable(Event_IoTransaction event) =>
       ContainsImmutable.iotxSchedule(event.schedule) + ContainsImmutable.small(event.metadata);
 
