@@ -16,8 +16,6 @@ import 'builder_error.dart';
 import 'merging_ops.dart';
 import 'user_input_validations.dart';
 
-class ClassName {}
-
 /// Defines a builder for [IoTransaction]s
 abstract class TransactionBuilderApiDefinition {
   /// Builds an unproven attestation for the given predicate
