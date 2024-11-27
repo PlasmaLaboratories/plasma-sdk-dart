@@ -15,7 +15,7 @@ void main() {
     // final txoAddress2 = TransactionOutputAddress(network: 2, ledger: 0, index: 0, id: dummyTxIdentifier);
 
     test('Valid data-input case, transfer a simple series', () {
-      final seriesPolicy = Event_SeriesPolicy(
+      final seriesPolicy = SeriesPolicy(
           label: 'seriesLabelB', registrationUtxo: txoAddress1);
 
       final v1In = Value(
@@ -63,7 +63,7 @@ void main() {
     });
 
     test('Valid data-input case 2, transfer a simple series', () {
-      final seriesPolicy = Event_SeriesPolicy(
+      final seriesPolicy = SeriesPolicy(
           label: 'seriesLabelB', registrationUtxo: txoAddress1);
 
       final v1In = Value(
@@ -116,7 +116,7 @@ void main() {
     });
 
     test('InValid data-input case 2, transfer a simple series', () {
-      final seriesPolicy = Event_SeriesPolicy(
+      final seriesPolicy = SeriesPolicy(
           label: 'seriesLabelB', registrationUtxo: txoAddress1);
 
       final v1In = Value(

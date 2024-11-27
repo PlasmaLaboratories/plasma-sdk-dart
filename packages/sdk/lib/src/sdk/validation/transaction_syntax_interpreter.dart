@@ -276,7 +276,7 @@ class TransactionSyntaxInterpreter {
           .first;
     }
 
-    final mintedAsset = transaction.mintingStatements.map((stm) {
+    final mintedAsset = transaction.datum.event.mintingStatements.map((stm) {
       final series = seriesGivenMintedStatements(stm);
       return Value(
           asset: Value_Asset(
@@ -368,12 +368,12 @@ class TransactionSyntaxInterpreter {
     final gIds = {
       ...groupsIn.map((group) => group.groupId),
       ...groupsOut.map((group) => group.groupId),
-      ...transaction.groupPolicies.map((policy) => policy.event.computeId)
+      ...transaction.datum.event.groupPolicies.map((policy) => policy.computeId)
     };
 
     final res = gIds.every((gId) {
-      if (!transaction.groupPolicies
-          .map((policy) => policy.event.computeId)
+      if (!transaction.datum.event.groupPolicies
+          .map((policy) => policy.computeId)
           .contains(gId)) {
         return groupsIn
                 .where((group) => group.groupId == gId)
@@ -427,12 +427,12 @@ class TransactionSyntaxInterpreter {
     final sIds = {
       ...seriesIn.map((series) => series.seriesId),
       ...seriesOut.map((series) => series.seriesId),
-      ...transaction.seriesPolicies.map((policy) => policy.event.computeId)
+      ...transaction.datum.event.seriesPolicies.map((policy) => policy.computeId)
     };
 
     final sIdsOnMintingStatements = transaction.inputs
         .where((input) =>
-            transaction.mintingStatements.any(
+            transaction.datum.event.mintingStatements.any(
                 (statement) => statement.seriesTokenUtxo == input.address) &&
             input.value.whichValue() == Value_Value.series)
         .map((input) => input.value.series.seriesId)
@@ -445,8 +445,8 @@ class TransactionSyntaxInterpreter {
                 .map((series) => series.quantity.value.toBigInt)
                 .fold<BigInt>(BigInt.zero, (sum, quantity) => sum + quantity) >=
             BigInt.zero;
-      } else if (!transaction.seriesPolicies
-          .any((policy) => policy.event.computeId == sId)) {
+      } else if (!transaction.datum.event.seriesPolicies
+          .any((policy) => policy.computeId == sId)) {
         final seriesInSum = seriesIn
             .where((series) => series.seriesId == sId)
             .map((series) => series.quantity.value.toBigInt)
@@ -485,7 +485,7 @@ class TransactionSyntaxInterpreter {
   /// @return Either a TransactionSyntaxError if validation fails or Unit if validation passes.
   static Either<TransactionSyntaxError, Unit> assetNoRepeatedUtxosValidation(
       IoTransaction transaction) {
-    final mintingStatementsValidation = transaction.mintingStatements
+    final mintingStatementsValidation = transaction.datum.event.mintingStatements
         .map((stm) => (stm.groupTokenUtxo, stm.seriesTokenUtxo))
         .fold(<TransactionOutputAddress, List<TransactionOutputAddress>>{},
             (acc, utxo) {
@@ -503,10 +503,10 @@ class TransactionSyntaxInterpreter {
             TransactionSyntaxError.duplicateInput(addressMap.key));
 
     /// replace with do notation at some point
-    final groupPolicies = transaction.groupPolicies
-        .map((policy) => policy.event.registrationUtxo);
-    final seriesPolicies = transaction.seriesPolicies
-        .map((policy) => policy.event.registrationUtxo);
+    final groupPolicies = transaction.datum.event.groupPolicies
+        .map((policy) => policy.registrationUtxo);
+    final seriesPolicies = transaction.datum.event.seriesPolicies
+        .map((policy) => policy.registrationUtxo);
     final concat = [...groupPolicies, ...seriesPolicies];
     final reducer = concat
         .fold<Map<TransactionOutputAddress, List<TransactionOutputAddress>>>(
@@ -539,10 +539,10 @@ class TransactionSyntaxInterpreter {
             !(stxo.value.whichValue() == Value_Value.topl) &&
             !(stxo.value.whichValue() == Value_Value.asset) &&
             (!(stxo.value.whichValue() == Value_Value.lvl) ||
-                transaction.groupPolicies.any((policy) =>
-                    policy.event.registrationUtxo == stxo.address) ||
-                transaction.seriesPolicies.any(
-                    (policy) => policy.event.registrationUtxo == stxo.address)))
+                transaction.datum.event.groupPolicies.any((policy) =>
+                    policy.registrationUtxo == stxo.address) ||
+                transaction.datum.event.seriesPolicies.any(
+                    (policy) => policy.registrationUtxo == stxo.address)))
         .toList();
   }
 
@@ -551,7 +551,7 @@ class TransactionSyntaxInterpreter {
     final groupIdsOnMintedStatements = transaction.inputs
         .where((input) =>
             input.value.whichValue() == Value_Value.group &&
-            transaction.mintingStatements
+            transaction.datum.event.mintingStatements
                 .any((statement) => statement.groupTokenUtxo == input.address))
         .map((input) {
       if (input.value.whichValue() == Value_Value.group) {
@@ -562,7 +562,7 @@ class TransactionSyntaxInterpreter {
     final seriesIdsOnMintedStatements = transaction.inputs
         .where((input) =>
             input.value.whichValue() == Value_Value.series &&
-            transaction.mintingStatements
+            transaction.datum.event.mintingStatements
                 .any((statement) => statement.seriesTokenUtxo == input.address))
         .map((input) {
       if (input.value.whichValue() == Value_Value.series) {
@@ -575,14 +575,14 @@ class TransactionSyntaxInterpreter {
             !utxo.value.hasLvl() &&
             !utxo.value.hasTopl() &&
             (!utxo.value.hasGroup() ||
-                transaction.groupPolicies.any((policy) {
+                transaction.datum.event.groupPolicies.any((policy) {
                   if (!utxo.value.hasGroup()) return false;
-                  return policy.event.computeId == utxo.value.group.groupId;
+                  return policy.computeId == utxo.value.group.groupId;
                 })) &&
             (!utxo.value.hasSeries() ||
-                transaction.seriesPolicies.any((policy) {
+                transaction.datum.event.seriesPolicies.any((policy) {
                   if (!utxo.value.hasSeries()) return false;
-                  return policy.event.computeId == utxo.value.series.seriesId;
+                  return policy.computeId == utxo.value.series.seriesId;
                 })) &&
             (!utxo.value.hasAsset() ||
                 (groupIdsOnMintedStatements
@@ -622,18 +622,18 @@ class TransactionSyntaxInterpreter {
     }
 
     final bool validGroups = groups.every((group) =>
-        transaction.groupPolicies.any((policy) =>
-            policy.event.computeId == group.groupId &&
-            registrationInPolicyContainsLvls(policy.event.registrationUtxo)) &&
+        transaction.datum.event.groupPolicies.any((policy) =>
+            policy.computeId == group.groupId &&
+            registrationInPolicyContainsLvls(policy.registrationUtxo)) &&
         group.quantity > 0.toInt128());
 
-    final bool validSeries = series.every((series) => transaction.seriesPolicies
+    final bool validSeries = series.every((series) => transaction.datum.event.seriesPolicies
         .any((policy) =>
-            policy.event.computeId == series.seriesId &&
-            registrationInPolicyContainsLvls(policy.event.registrationUtxo) &&
+            policy.computeId == series.seriesId &&
+            registrationInPolicyContainsLvls(policy.registrationUtxo) &&
             series.quantity > 0.toInt128()));
 
-    final bool validAssets = transaction.mintingStatements.every((ams) {
+    final bool validAssets = transaction.datum.event.mintingStatements.every((ams) {
       final maybeSeries = transaction.inputs
           .where((input) =>
               input.value.hasSeries() && input.address == ams.seriesTokenUtxo)
@@ -669,7 +669,7 @@ class TransactionSyntaxInterpreter {
         final burned = sIn - sOut;
 
         final quantity =
-            transaction.mintingStatements.fold<BigInt>(BigInt.zero, (sum, ams) {
+            transaction.datum.event.mintingStatements.fold<BigInt>(BigInt.zero, (sum, ams) {
           final filterSeries = transaction.inputs
               .where((input) =>
                   input.address == ams.seriesTokenUtxo &&

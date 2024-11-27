@@ -8,7 +8,7 @@ import '../quivr/runtime/dynamic_context.dart';
 import 'common/contains_signable.dart';
 import 'validation/blake2b256_digest_interpreter.dart';
 import 'validation/extended_ed25519_signature_interpreter.dart';
-import 'validation/sha256_digest_interpeter.dart';
+import 'validation/sha256_digest_interpreter.dart';
 
 final Map<String, DigestVerifier> _hashingRoutines = {
   'Blake2b256': Blake2b256DigestInterpreter(),

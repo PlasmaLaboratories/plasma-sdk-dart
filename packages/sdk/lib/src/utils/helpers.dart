@@ -45,3 +45,9 @@ List<(A, B)> zip<A, B>(List<A> list1, List<B> list2) {
   }
   return (lefts, rights);
 }
+
+extension ListReplaceExtensions<T> on List<T> {
+  void replaceAll(List<T> newList) {
+    replaceRange(0, length, newList);
+  }
+}
